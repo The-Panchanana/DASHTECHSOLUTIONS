@@ -1,0 +1,2476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAP ABAP Support & Web Development — Enterprise Solutions</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600;700&family=JetBrains+Mono:wght@300;400;500&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080810;
+  --surface: #0f0f1a;
+  --card: rgba(255,255,255,0.035);
+  --border: rgba(255,255,255,0.08);
+  --gold: #f0a500;
+  --gold-light: #ffc84a;
+  --pink: #e8195a;
+  --cyan: #00d4ff;
+  --text: #f2f2f8;
+  --muted: #6b7280;
+  --dim: #9ca3af;
+  --font-display: 'Cormorant Garamond', serif;
+  --font-ui: 'Syne', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; font-size: 16px; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-ui);
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ── CUSTOM CURSOR ── */
+#cursor { position:fixed;width:12px;height:12px;background:var(--gold);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s; mix-blend-mode:difference; }
+#cursor-trail { position:fixed;width:40px;height:40px;border:1px solid rgba(240,165,0,0.4);border-radius:50%;pointer-events:none;z-index:9998;transform:translate(-50%,-50%);transition:left .12s ease-out,top .12s ease-out,width .2s,height .2s; }
+body:hover #cursor { opacity:1; }
+
+/* ── CANVAS ── */
+#hero-canvas { position:absolute;inset:0;z-index:0;opacity:0.6; }
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar { width:4px; }
+::-webkit-scrollbar-track { background:var(--surface); }
+::-webkit-scrollbar-thumb { background:var(--gold);border-radius:2px; }
+
+/* ── NAV ── */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 1000;
+  padding: 20px 60px;
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(8,8,16,0.7);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid var(--border);
+  transition: padding .3s;
+}
+nav.scrolled { padding: 14px 60px; }
+.nav-logo {
+  font-family: var(--font-display);
+  font-size: 1.8rem; font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.5px;
+}
+.nav-logo span { color: var(--gold); }
+.nav-links { display:flex;gap:36px;list-style:none; }
+.nav-links a {
+  font-family: var(--font-mono); font-size: 0.75rem; font-weight: 500;
+  color: var(--muted); text-decoration: none; letter-spacing: 0.1em;
+  text-transform: uppercase; transition: color .25s;
+  position: relative;
+}
+.nav-links a::after {
+  content:''; position:absolute;bottom:-4px;left:0;width:0;height:1px;
+  background:var(--gold);transition:width .3s;
+}
+.nav-links a:hover { color: var(--gold); }
+.nav-links a:hover::after { width:100%; }
+.nav-admin-btn {
+  background: transparent;
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  padding: 8px 20px;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.1em;
+  cursor: pointer; transition: all .25s; text-transform:uppercase;
+}
+.nav-admin-btn:hover { background: var(--gold); color: var(--bg); }
+
+/* ── HERO ── */
+#hero {
+  position: relative; min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  overflow: hidden; text-align: center;
+}
+.hero-content { position:relative;z-index:2;max-width:900px;padding:0 24px; }
+.hero-badge {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 6px 16px;
+  background: rgba(240,165,0,0.1);
+  border: 1px solid rgba(240,165,0,0.3);
+  border-radius: 100px;
+  font-family: var(--font-mono); font-size: 0.7rem; letter-spacing: 0.15em;
+  color: var(--gold-light); text-transform: uppercase; margin-bottom: 32px;
+  animation: fadeUp 0.8s ease both;
+}
+.hero-badge-dot { width:6px;height:6px;background:var(--gold);border-radius:50%;animation:pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.8)} }
+.hero-title {
+  font-family: var(--font-display);
+  font-size: clamp(3.5rem, 9vw, 8rem);
+  font-weight: 700; line-height: 0.95;
+  margin-bottom: 28px;
+  animation: fadeUp 0.8s ease 0.1s both;
+}
+.hero-title .line-gold { color: var(--gold); font-style: italic; display:block; }
+.hero-title .line-outline {
+  -webkit-text-stroke: 1px rgba(242,242,248,0.3);
+  color: transparent; display:block;
+}
+.hero-sub {
+  font-family: var(--font-mono); font-size: 0.9rem; color: var(--dim);
+  max-width: 520px; margin: 0 auto 48px; line-height: 1.8;
+  animation: fadeUp 0.8s ease 0.2s both;
+}
+.hero-ctas {
+  display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;
+  animation: fadeUp 0.8s ease 0.3s both;
+}
+.btn-primary {
+  padding: 14px 36px;
+  background: var(--gold);
+  color: var(--bg); font-family: var(--font-mono); font-size: 0.78rem;
+  font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  border: none; cursor: pointer; transition: all .3s;
+  position: relative; overflow: hidden;
+  text-decoration: none; display:inline-block;
+}
+.btn-primary::after {
+  content:''; position:absolute;inset:0;background:rgba(255,255,255,0.2);
+  transform:translateX(-100%);transition:transform .3s;
+}
+.btn-primary:hover::after { transform:translateX(0); }
+.btn-outline {
+  padding: 14px 36px;
+  background: transparent; color: var(--text);
+  font-family: var(--font-mono); font-size: 0.78rem;
+  font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase;
+  border: 1px solid var(--border); cursor: pointer; transition: all .3s;
+  text-decoration: none; display:inline-block;
+}
+.btn-outline:hover { border-color: var(--gold); color: var(--gold); }
+.hero-scroll {
+  position:absolute;bottom:40px;left:50%;transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  animation: fadeIn 1s ease 1s both;
+}
+.hero-scroll span { font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.15em;text-transform:uppercase; }
+.scroll-line { width:1px;height:50px;background:linear-gradient(to bottom,var(--gold),transparent);animation:scrollPulse 2s ease infinite; }
+@keyframes scrollPulse { 0%{opacity:0;transform:scaleY(0);transform-origin:top} 50%{opacity:1;transform:scaleY(1)} 100%{opacity:0;transform:scaleY(0);transform-origin:bottom} }
+.hero-stats {
+  position: absolute; bottom: 60px; right: 60px;
+  display: flex; flex-direction: column; gap: 24px; text-align: right;
+  animation: fadeIn 1s ease 0.6s both;
+}
+.stat-item { }
+.stat-num { font-family:var(--font-display);font-size:2.4rem;font-weight:700;color:var(--gold);line-height:1; }
+.stat-label { font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase; }
+
+/* ── SECTION ── */
+section { padding: 120px 60px; }
+.section-header { margin-bottom: 80px; }
+.section-label {
+  font-family: var(--font-mono); font-size: 0.7rem; color: var(--gold);
+  letter-spacing: 0.2em; text-transform: uppercase; margin-bottom: 16px;
+  display: flex; align-items: center; gap: 12px;
+}
+.section-label::before { content:''; width:30px;height:1px;background:var(--gold); }
+.section-title {
+  font-family: var(--font-display); font-size: clamp(2.5rem, 5vw, 4.5rem);
+  font-weight: 700; line-height: 1.05; letter-spacing: -0.02em;
+}
+.section-title em { color:var(--gold);font-style:italic; }
+
+/* ── PROJECTS GRID ── */
+.filter-tabs {
+  display: flex; gap: 4px; margin-bottom: 48px; flex-wrap: wrap;
+}
+.filter-tab {
+  padding: 8px 20px;
+  background: transparent; color: var(--muted);
+  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em;
+  text-transform: uppercase; border: 1px solid var(--border);
+  cursor: pointer; transition: all .25s;
+}
+.filter-tab.active, .filter-tab:hover { background: var(--gold); color: var(--bg); border-color: var(--gold); }
+.projects-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 24px;
+}
+.project-card {
+  position: relative; overflow: hidden; cursor: pointer;
+  border: 1px solid var(--border); transition: all .4s;
+  background: var(--card); backdrop-filter: blur(10px);
+  animation: fadeUp 0.5s ease both;
+}
+.project-card:hover { transform: translateY(-8px); border-color: rgba(240,165,0,0.4); }
+.project-card:hover .card-img img { transform: scale(1.08); }
+.card-img { height: 240px; overflow: hidden; position: relative; background: var(--surface); }
+.card-img img { width:100%;height:100%;object-fit:cover;transition:transform .5s; }
+.card-img-placeholder {
+  width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  font-size:4rem;
+}
+.card-tag {
+  position: absolute; top: 16px; left: 16px;
+  background: var(--bg); border: 1px solid var(--gold);
+  color: var(--gold); padding: 4px 12px;
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase;
+}
+.card-body { padding: 28px; }
+.card-title { font-family:var(--font-display);font-size:1.5rem;font-weight:700;margin-bottom:10px; }
+.card-desc { font-family:var(--font-mono);font-size:0.78rem;color:var(--dim);line-height:1.7;margin-bottom:20px; }
+.card-tech { display:flex;flex-wrap:wrap;gap:8px; }
+.tech-pill {
+  background: rgba(240,165,0,0.08); border: 1px solid rgba(240,165,0,0.2);
+  color: var(--gold); padding: 4px 10px;
+  font-family: var(--font-mono); font-size: 0.65rem; letter-spacing: 0.05em;
+}
+.card-actions { display:flex;gap:10px;margin-top:20px; }
+.card-btn {
+  padding:6px 16px;font-family:var(--font-mono);font-size:0.68rem;
+  letter-spacing:0.08em;text-transform:uppercase;border:1px solid var(--border);
+  background:transparent;color:var(--dim);cursor:pointer;transition:all .25s;
+  text-decoration:none;display:inline-block;
+}
+.card-btn:hover{border-color:var(--gold);color:var(--gold);}
+.card-btn.admin-del{border-color:rgba(232,25,90,0.3);color:var(--pink);}
+.card-btn.admin-del:hover{background:var(--pink);color:#fff;}
+.card-btn.admin-edit{border-color:rgba(0,212,255,0.3);color:var(--cyan);}
+.card-btn.admin-edit:hover{background:var(--cyan);color:var(--bg);}
+
+/* ── SERVICES ── */
+#services { background: var(--surface); }
+.services-grid {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 2px;
+}
+.service-card {
+  padding: 48px 36px;
+  background: var(--card); border: 1px solid var(--border);
+  transition: all .4s; position: relative; overflow: hidden;
+}
+.service-card::before {
+  content:''; position:absolute;bottom:0;left:0;width:100%;height:2px;
+  background:linear-gradient(90deg,var(--gold),var(--pink));
+  transform:scaleX(0);transition:transform .4s;transform-origin:left;
+}
+.service-card:hover::before { transform:scaleX(1); }
+.service-card:hover { transform:translateY(-4px); }
+.service-icon { font-size:2.5rem;margin-bottom:24px;display:block; }
+.service-num {
+  position:absolute;top:20px;right:24px;
+  font-family:var(--font-display);font-size:4rem;font-weight:700;
+  color:rgba(240,165,0,0.06);line-height:1;
+}
+.service-title { font-family:var(--font-ui);font-size:1.15rem;font-weight:700;margin-bottom:12px; }
+.service-desc { font-family:var(--font-mono);font-size:0.78rem;color:var(--dim);line-height:1.7; }
+
+/* ── SKILLS ── */
+.skills-wrapper { display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:start; }
+.skills-text .section-title { margin-bottom:24px; }
+.skills-text p { font-family:var(--font-mono);font-size:0.82rem;color:var(--dim);line-height:1.8;margin-bottom:32px; }
+.skills-bars { display:flex;flex-direction:column;gap:20px; }
+.skill-item { }
+.skill-info { display:flex;justify-content:space-between;margin-bottom:8px; }
+.skill-name { font-family:var(--font-mono);font-size:0.75rem;color:var(--text);letter-spacing:0.05em; }
+.skill-pct { font-family:var(--font-mono);font-size:0.75rem;color:var(--gold); }
+.skill-bar { height:3px;background:rgba(255,255,255,0.07);position:relative;overflow:hidden; }
+.skill-fill {
+  height:100%;background:linear-gradient(90deg,var(--gold),var(--gold-light));
+  width:0;transition:width 1.5s cubic-bezier(.25,.46,.45,.94);
+}
+
+/* ── ABOUT ── */
+#about { background: var(--surface); }
+.about-grid { display:grid;grid-template-columns:1fr 1.2fr;gap:80px;align-items:center; }
+.about-img-wrap { position:relative; }
+.about-img-frame {
+  width:100%;aspect-ratio:3/4;max-height:520px;
+  border:1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface), var(--bg));
+  display:flex;align-items:center;justify-content:center;font-size:8rem;
+  position:relative;overflow:hidden;
+}
+.about-img-frame::after {
+  content:''; position:absolute;bottom:0;left:0;right:0;height:40%;
+  background:linear-gradient(to top,rgba(240,165,0,0.15),transparent);
+}
+.about-corner {
+  position:absolute;bottom:-20px;right:-20px;
+  width:140px;height:140px;border:2px solid var(--gold);opacity:0.4;
+}
+.about-text .section-title { margin-bottom:24px; }
+.about-text p { font-family:var(--font-mono);font-size:0.82rem;color:var(--dim);line-height:1.9;margin-bottom:24px; }
+.about-counters { display:grid;grid-template-columns:repeat(3,1fr);gap:24px;margin-top:48px;border-top:1px solid var(--border);padding-top:40px; }
+.counter-item .num { font-family:var(--font-display);font-size:2.8rem;font-weight:700;color:var(--gold); }
+.counter-item .label { font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:4px; }
+
+/* ── TESTIMONIALS ── */
+.testimonials-slider { position:relative;overflow:hidden; }
+.testimonials-track { display:flex;transition:transform .5s cubic-bezier(.25,.46,.45,.94); }
+.testimonial-card {
+  min-width:100%; padding:60px;
+  background:var(--card);border:1px solid var(--border);
+  position:relative;
+}
+.quote-mark {
+  font-family:var(--font-display);font-size:8rem;color:rgba(240,165,0,0.1);
+  line-height:0.5;position:absolute;top:40px;left:40px;
+}
+.testimonial-text {
+  font-family:var(--font-display);font-size:1.6rem;font-weight:400;
+  font-style:italic;line-height:1.5;color:var(--text);margin-bottom:36px;
+  position:relative;z-index:1;
+}
+.testimonial-author { display:flex;align-items:center;gap:16px; }
+.author-avatar { width:50px;height:50px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:1.4rem; }
+.author-info .name { font-family:var(--font-ui);font-weight:700;font-size:0.95rem; }
+.author-info .role { font-family:var(--font-mono);font-size:0.72rem;color:var(--gold); }
+.slider-controls { display:flex;gap:12px;margin-top:24px; }
+.slider-btn {
+  width:44px;height:44px;border:1px solid var(--border);background:transparent;
+  color:var(--text);font-size:1.1rem;cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;
+}
+.slider-btn:hover { border-color:var(--gold);color:var(--gold); }
+
+/* ── CONTACT ── */
+#contact { }
+.contact-grid { display:grid;grid-template-columns:1fr 1.2fr;gap:80px; }
+.contact-info .section-title { margin-bottom:24px; }
+.contact-info p { font-family:var(--font-mono);font-size:0.82rem;color:var(--dim);line-height:1.8;margin-bottom:36px; }
+.contact-details { display:flex;flex-direction:column;gap:20px; }
+.contact-item { display:flex;align-items:flex-start;gap:16px; }
+.contact-icon { width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0; }
+.contact-item-label { font-family:var(--font-mono);font-size:0.68rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px; }
+.contact-item-val { font-family:var(--font-mono);font-size:0.82rem;color:var(--text); }
+.contact-form { display:flex;flex-direction:column;gap:20px; }
+.form-group { position:relative; }
+.form-group input, .form-group textarea, .form-group select {
+  width:100%;padding:16px;
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-mono);font-size:0.82rem;
+  outline:none;transition:border-color .25s;resize:none;
+}
+.form-group textarea { height:140px; }
+.form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+  border-color:rgba(240,165,0,0.5);
+}
+.form-group select option { background:var(--bg); }
+.form-label {
+  display:block;font-family:var(--font-mono);font-size:0.68rem;
+  color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-bottom:8px;
+}
+
+/* ── FOOTER ── */
+footer {
+  padding: 48px 60px;
+  background: var(--surface); border-top: 1px solid var(--border);
+  display: flex; justify-content: space-between; align-items: center; flex-wrap:wrap; gap:20px;
+}
+.footer-logo { font-family:var(--font-display);font-size:1.4rem;font-weight:700; }
+.footer-logo span { color:var(--gold); }
+.footer-copy { font-family:var(--font-mono);font-size:0.72rem;color:var(--muted); }
+.social-links { display:flex;gap:12px; }
+.social-link {
+  width:36px;height:36px;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;
+  font-size:0.9rem;color:var(--muted);text-decoration:none;transition:all .25s;
+}
+.social-link:hover { border-color:var(--gold);color:var(--gold); }
+
+/* ── ADMIN PANEL ── */
+#admin-overlay {
+  position:fixed;inset:0;z-index:2000;
+  display:flex;justify-content:flex-end;
+  pointer-events:none;opacity:0;transition:opacity .3s;
+}
+#admin-overlay.open { pointer-events:all;opacity:1; }
+.admin-backdrop {
+  position:absolute;inset:0;background:rgba(8,8,16,0.8);backdrop-filter:blur(4px);
+  cursor:pointer;
+}
+.admin-panel {
+  position:relative;width:600px;max-width:95vw;
+  background:var(--surface);border-left:1px solid var(--border);
+  height:100%;overflow-y:auto;
+  transform:translateX(100%);transition:transform .4s cubic-bezier(.25,.46,.45,.94);
+  display:flex;flex-direction:column;
+}
+#admin-overlay.open .admin-panel { transform:translateX(0); }
+.admin-header {
+  padding:32px 36px;border-bottom:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:center;
+  background:var(--bg);position:sticky;top:0;z-index:10;
+}
+.admin-title { font-family:var(--font-display);font-size:1.6rem;font-weight:700; }
+.admin-title span{color:var(--gold);}
+.admin-close {
+  width:36px;height:36px;border:1px solid var(--border);background:transparent;
+  color:var(--text);font-size:1.2rem;cursor:pointer;transition:all .25s;
+  display:flex;align-items:center;justify-content:center;
+}
+.admin-close:hover{border-color:var(--pink);color:var(--pink);}
+.admin-body { padding:36px;flex:1; }
+.admin-section-title {
+  font-family:var(--font-mono);font-size:0.7rem;letter-spacing:0.15em;
+  text-transform:uppercase;color:var(--gold);margin-bottom:20px;
+  display:flex;align-items:center;gap:10px;
+}
+.admin-section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.admin-form{display:flex;flex-direction:column;gap:16px;margin-bottom:48px;}
+.admin-form .form-group input,
+.admin-form .form-group textarea,
+.admin-form .form-group select{
+  background:rgba(255,255,255,0.03);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-mono);font-size:0.8rem;
+  padding:12px 16px;width:100%;outline:none;
+}
+.admin-form .form-group textarea{height:100px;resize:vertical;}
+.admin-form .form-group select option{background:var(--surface);}
+.admin-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.admin-projects-list{display:flex;flex-direction:column;gap:12px;}
+.admin-project-item{
+  padding:16px;background:var(--card);border:1px solid var(--border);
+  display:flex;justify-content:space-between;align-items:flex-start;gap:16px;
+}
+.admin-project-info .title{font-family:var(--font-ui);font-size:0.95rem;font-weight:600;margin-bottom:4px;}
+.admin-project-info .cat{font-family:var(--font-mono);font-size:0.68rem;color:var(--gold);}
+.admin-project-btns{display:flex;gap:6px;flex-shrink:0;}
+.admin-btn{
+  padding:5px 12px;font-family:var(--font-mono);font-size:0.65rem;
+  letter-spacing:0.08em;text-transform:uppercase;cursor:pointer;border:1px solid;transition:all .25s;background:transparent;
+}
+.admin-btn.edit{border-color:rgba(0,212,255,0.4);color:var(--cyan);}
+.admin-btn.edit:hover{background:var(--cyan);color:var(--bg);}
+.admin-btn.del{border-color:rgba(232,25,90,0.4);color:var(--pink);}
+.admin-btn.del:hover{background:var(--pink);color:#fff;}
+.admin-btn.save{border-color:rgba(240,165,0,0.4);color:var(--gold);}
+.admin-btn.save:hover{background:var(--gold);color:var(--bg);}
+.admin-btn.cancel{border-color:var(--border);color:var(--muted);}
+.admin-btn.cancel:hover{border-color:var(--text);color:var(--text);}
+
+/* ── PASSWORD GATE ── */
+.admin-gate{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:300px;gap:24px;
+}
+.admin-gate .gate-icon{font-size:3rem;}
+.admin-gate h3{font-family:var(--font-display);font-size:1.8rem;}
+.admin-gate p{font-family:var(--font-mono);font-size:0.78rem;color:var(--dim);}
+.admin-gate input{
+  width:100%;max-width:280px;padding:14px 20px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  color:var(--text);font-family:var(--font-mono);font-size:0.9rem;
+  text-align:center;outline:none;letter-spacing:0.1em;
+}
+.admin-gate input:focus{border-color:rgba(240,165,0,0.5);}
+.admin-gate .error{color:var(--pink);font-family:var(--font-mono);font-size:0.75rem;min-height:20px;}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:32px;right:32px;z-index:3000;
+  display:flex;flex-direction:column;gap:10px;
+}
+.toast-msg{
+  padding:12px 20px;background:var(--surface);border:1px solid var(--border);
+  border-left:3px solid var(--gold);
+  font-family:var(--font-mono);font-size:0.78rem;color:var(--text);
+  animation:toastIn .3s ease; max-width:300px;
+}
+.toast-msg.error{border-left-color:var(--pink);}
+.toast-msg.success{border-left-color:#22c55e;}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.reveal{opacity:0;transform:translateY(40px);transition:opacity .7s ease,transform .7s ease;}
+.reveal.visible{opacity:1;transform:none;}
+
+/* ── FLOATING GEOM ── */
+.geo-float{position:absolute;pointer-events:none;z-index:1;}
+.geo1{
+  width:300px;height:300px;border:1px solid rgba(240,165,0,0.08);
+  right:-80px;top:15%;animation:spin 30s linear infinite;
+}
+.geo2{
+  width:180px;height:180px;border:1px solid rgba(232,25,90,0.06);
+  left:5%;bottom:20%;animation:spin 20s linear infinite reverse;
+}
+.geo3{
+  width:80px;height:80px;border:1px solid rgba(0,212,255,0.1);
+  right:15%;bottom:25%;animation:spin 15s linear infinite;
+}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+
+/* ── GRID LINES BACKGROUND ── */
+.grid-bg{
+  position:absolute;inset:0;
+  background-image:linear-gradient(rgba(240,165,0,0.03) 1px,transparent 1px),
+  linear-gradient(90deg,rgba(240,165,0,0.03) 1px,transparent 1px);
+  background-size:60px 60px;z-index:0;
+}
+.vignette{
+  position:absolute;inset:0;z-index:1;
+  background:radial-gradient(ellipse at center,transparent 40%,var(--bg) 90%);
+}
+
+/* ── MARQUEE ── */
+.marquee-wrap{
+  padding:20px 0;background:var(--gold);overflow:hidden;
+  display:flex;gap:0;
+}
+.marquee-track{
+  display:flex;gap:48px;white-space:nowrap;
+  animation:marquee 20s linear infinite;
+}
+.marquee-track2{animation:marquee2 20s linear infinite;}
+@keyframes marquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@keyframes marquee2{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+.marquee-item{
+  font-family:var(--font-ui);font-size:0.78rem;font-weight:700;
+  letter-spacing:0.15em;text-transform:uppercase;color:var(--bg);
+  display:flex;align-items:center;gap:24px;
+}
+.marquee-item::after{content:'★';font-size:0.6rem;}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;z-index:2500;
+  background:rgba(8,8,16,0.9);backdrop-filter:blur(8px);
+  display:flex;align-items:center;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.modal-overlay.open{opacity:1;pointer-events:all;}
+.modal-box{
+  background:var(--surface);border:1px solid var(--border);
+  padding:48px;max-width:500px;width:95%;
+  transform:scale(0.95);transition:transform .3s;
+}
+.modal-overlay.open .modal-box{transform:scale(1);}
+.modal-box h3{font-family:var(--font-display);font-size:1.8rem;margin-bottom:12px;}
+.modal-box p{font-family:var(--font-mono);font-size:0.8rem;color:var(--dim);line-height:1.7;margin-bottom:28px;}
+.modal-btns{display:flex;gap:12px;justify-content:flex-end;}
+
+/* ── SERVICE PANELS ── */
+.srv-panel {
+  display:grid;grid-template-columns:1fr 1.3fr;
+  min-height:520px;border-top:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.srv-panel-alt { grid-template-columns:1.3fr 1fr; }
+.srv-info {
+  padding:72px 60px;display:flex;flex-direction:column;justify-content:center;
+  position:relative;z-index:2;
+}
+.srv-num {
+  font-family:var(--font-display);font-size:5rem;font-weight:700;
+  color:rgba(255,255,255,0.04);line-height:1;position:absolute;top:32px;right:40px;
+}
+.srv-icon { font-size:2.4rem;margin-bottom:20px; }
+.srv-title {
+  font-family:var(--font-display);font-size:2.2rem;font-weight:700;
+  margin-bottom:16px;line-height:1.1;
+}
+.srv-desc {
+  font-family:var(--font-mono);font-size:0.8rem;color:var(--dim);
+  line-height:1.85;margin-bottom:24px;max-width:420px;
+}
+.srv-features {
+  list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:28px;
+}
+.srv-features li {
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--dim);
+  padding-left:18px;position:relative;
+}
+.srv-features li::before { content:'→';position:absolute;left:0;color:var(--gold); }
+.srv-tags { display:flex;flex-wrap:wrap;gap:8px; }
+.srv-tags span {
+  padding:4px 12px;background:rgba(240,165,0,0.07);
+  border:1px solid rgba(240,165,0,0.18);
+  font-family:var(--font-mono);font-size:0.65rem;color:var(--gold);letter-spacing:0.06em;
+}
+
+/* code window */
+.srv-code-wrap {
+  position:relative;background:var(--surface);
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.srv-panel-alt .srv-code-wrap { border-left:none;border-right:1px solid var(--border); }
+.srv-code-window {
+  flex:1;background:#080e14;font-family:var(--font-mono);
+  display:flex;flex-direction:column;overflow:hidden;
+}
+.srv-code-bar {
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;background:rgba(255,255,255,0.03);
+  border-bottom:1px solid rgba(255,255,255,0.06);flex-shrink:0;
+}
+.srv-dot { width:12px;height:12px;border-radius:50%;display:inline-block; }
+.srv-filename { font-size:0.68rem;color:var(--muted);margin-left:8px;flex:1; }
+.srv-lang-badge {
+  font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;
+  border:1px solid;padding:2px 8px;
+}
+.srv-code-body {
+  flex:1;padding:24px 28px;font-size:0.76rem;line-height:2;overflow:hidden;
+  position:relative;
+}
+.srv-code-body .cl { display:block;white-space:pre;opacity:0;transform:translateX(-6px);transition:opacity .25s,transform .25s; }
+.srv-code-body .cl.shown { opacity:1;transform:none; }
+.srv-code-body .cl.indent1 { padding-left:1.5em; }
+.srv-code-body .cl.indent2 { padding-left:3em; }
+.srv-code-body .cl.indent3 { padding-left:4.5em; }
+/* syntax colours */
+.c-kw  { color:#c678dd; }
+.c-fn  { color:#61afef; }
+.c-str { color:#98c379; }
+.c-num { color:#d19a66; }
+.c-cm  { color:#5c6370;font-style:italic; }
+.c-op  { color:#56b6c2; }
+.c-var { color:#e06c75; }
+.c-prop{ color:#e5c07b; }
+.c-tag { color:#e06c75; }
+.c-atr { color:#d19a66; }
+.c-cur { color:var(--gold);animation:blink .9s step-end infinite; }
+/* scan line overlay */
+.srv-code-body::after {
+  content:'';position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(0,0,0,0.03) 0px,rgba(0,0,0,0.03) 1px,transparent 1px,transparent 3px);
+}
+
+/* ── UI/UX live preview ── */
+.srv-preview {
+  padding:24px;border-top:1px solid rgba(255,255,255,0.05);
+  background:#060a10;flex-shrink:0;
+}
+.srv-preview-uiux { display:flex;flex-direction:column;gap:12px; }
+.uiux-card {
+  padding:16px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);
+  border-radius:4px;display:flex;align-items:center;gap:12px;
+  animation:uiFloat 3s ease-in-out infinite;
+}
+@keyframes uiFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.uiux-avatar {
+  width:36px;height:36px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,var(--gold),var(--pink));
+}
+.uiux-lines { flex:1;display:flex;flex-direction:column;gap:6px; }
+.uiux-line { height:7px;border-radius:4px;background:rgba(255,255,255,0.12);animation:shimmer 2s ease infinite; }
+.uiux-line-1 { width:70%; }
+.uiux-line-2 { width:45%; }
+@keyframes shimmer{0%,100%{opacity:0.6}50%{opacity:1}}
+.uiux-badge {
+  padding:3px 8px;background:rgba(240,165,0,0.15);border:1px solid rgba(240,165,0,0.3);
+  font-family:var(--font-mono);font-size:0.6rem;color:var(--gold);
+}
+.uiux-btn-row { display:flex;gap:8px; }
+.uiux-btn {
+  flex:1;padding:8px;text-align:center;font-family:var(--font-mono);font-size:0.65rem;
+  letter-spacing:0.06em;border-radius:2px;cursor:default;
+  animation:uiPulse 2.5s ease-in-out infinite;
+}
+.uiux-btn-primary { background:var(--gold);color:var(--bg); }
+.uiux-btn-ghost { background:transparent;border:1px solid rgba(255,255,255,0.15);color:var(--dim); }
+@keyframes uiPulse{0%,100%{box-shadow:none}50%{box-shadow:0 0 12px rgba(240,165,0,0.3)}}
+
+/* ── Mobile frame preview ── */
+.srv-preview-mobile { display:flex;justify-content:center;padding:16px; }
+.mobile-frame {
+  width:110px;height:220px;border:2px solid rgba(255,255,255,0.15);border-radius:16px;
+  background:#0a0e14;position:relative;overflow:hidden;padding:22px 10px 10px;
+  box-shadow:0 0 30px rgba(163,230,53,0.08);
+}
+.mobile-notch {
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  width:36px;height:8px;background:rgba(255,255,255,0.1);
+  border-bottom-left-radius:6px;border-bottom-right-radius:6px;
+}
+.mobile-screen { display:flex;flex-direction:column;gap:7px;height:100%; }
+.ms-header { height:12px;background:linear-gradient(90deg,var(--gold),var(--pink));border-radius:3px;opacity:0.7; }
+.ms-card { height:50px;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.08);border-radius:4px;animation:msPulse 2s ease-in-out infinite; }
+.ms-card-sm { height:30px;animation-delay:0.3s; }
+.ms-row { display:flex;gap:5px; }
+.ms-btn { flex:1;height:18px;background:rgba(163,230,53,0.2);border:1px solid rgba(163,230,53,0.3);border-radius:3px;animation:msPulse 2.5s ease-in-out infinite; }
+.ms-btn-ghost { background:transparent;border-color:rgba(255,255,255,0.1); }
+@keyframes msPulse{0%,100%{opacity:0.6}50%{opacity:1}}
+
+/* ── SAP service card accent ── */
+/* ── REAL SAP LOGO ── */
+.sap-real-logo {
+  display:flex;flex-direction:column;align-items:flex-start;gap:10px;
+}
+.sap-real-logo svg {
+  filter:drop-shadow(0 0 16px rgba(0,159,219,0.5));
+  border-radius:3px;
+}
+.sap-badge-sub { display:flex;flex-direction:column;gap:2px; }
+.sap-badge-line1 {
+  font-family:var(--font-ui);font-size:0.82rem;font-weight:700;
+  color:var(--text);letter-spacing:0.02em;
+}
+.sap-badge-line2 {
+  font-family:var(--font-mono);font-size:0.65rem;
+  color:rgba(0,159,219,0.8);letter-spacing:0.08em;text-transform:uppercase;
+}
+
+/* ── TICKET TRACKER ── */
+#tickets { background:var(--surface); }
+.ticket-grid {
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:20px;
+}
+.ticket-card {
+  background:var(--card);border:1px solid var(--border);
+  padding:24px;position:relative;transition:all .3s;
+  border-left:3px solid transparent;
+}
+.ticket-card:hover { transform:translateY(-4px);border-color:rgba(255,255,255,0.12); }
+.ticket-card.status-resolved { border-left-color:#22c55e; }
+.ticket-card.status-progress { border-left-color:var(--gold); }
+.ticket-card.status-open     { border-left-color:var(--pink); }
+.ticket-header { display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px; }
+.ticket-id {
+  font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);
+  letter-spacing:0.1em;text-transform:uppercase;margin-bottom:4px;
+}
+.ticket-title { font-family:var(--font-ui);font-size:1rem;font-weight:700;line-height:1.3; }
+.ticket-badge {
+  padding:3px 10px;font-family:var(--font-mono);font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;border:1px solid;white-space:nowrap;flex-shrink:0;
+}
+.ticket-badge.resolved { color:#22c55e;border-color:rgba(34,197,94,0.3);background:rgba(34,197,94,0.08); }
+.ticket-badge.progress  { color:var(--gold);border-color:rgba(240,165,0,0.3);background:rgba(240,165,0,0.08); }
+.ticket-badge.open      { color:var(--pink);border-color:rgba(232,25,90,0.3);background:rgba(232,25,90,0.08); }
+.ticket-desc {
+  font-family:var(--font-mono);font-size:0.75rem;color:var(--dim);
+  line-height:1.7;margin-bottom:14px;
+}
+.ticket-meta { display:flex;flex-wrap:wrap;gap:10px;align-items:center; }
+.ticket-tag {
+  padding:3px 8px;background:rgba(0,120,215,0.08);
+  border:1px solid rgba(0,120,215,0.2);
+  font-family:var(--font-mono);font-size:0.62rem;color:#4da6ff;
+}
+.ticket-date {
+  font-family:var(--font-mono);font-size:0.62rem;color:var(--muted);
+  margin-left:auto;
+}
+.ticket-empty { grid-column:1/-1;text-align:center;padding:80px 24px; }
+.ticket-empty .t-icon { font-size:3rem;margin-bottom:16px; }
+.ticket-empty .t-title { font-family:var(--font-display);font-size:1.6rem;font-weight:700;margin-bottom:8px; }
+.ticket-empty .t-sub { font-family:var(--font-mono);font-size:0.78rem;color:var(--muted); }
+.ticket-stats { display:flex;gap:32px;margin-bottom:48px;flex-wrap:wrap; }
+.ts-item { display:flex;flex-direction:column;gap:4px; }
+.ts-num { font-family:var(--font-display);font-size:2.2rem;font-weight:700;line-height:1; }
+.ts-num.resolved { color:#22c55e; }
+.ts-num.progress { color:var(--gold); }
+.ts-num.open     { color:var(--pink); }
+.ts-num.total    { color:var(--sap-blue,#0078d7); }
+.ts-label { font-family:var(--font-mono);font-size:0.65rem;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase; }
+.ticket-filters { display:flex;gap:4px;margin-bottom:32px;flex-wrap:wrap; }
+.ticket-filter {
+  padding:6px 16px;font-family:var(--font-mono);font-size:0.68rem;
+  letter-spacing:0.08em;text-transform:uppercase;border:1px solid var(--border);
+  background:transparent;color:var(--muted);cursor:pointer;transition:all .25s;
+}
+.ticket-filter.active,.ticket-filter:hover { background:var(--sap-blue,#0078d7);color:#fff;border-color:var(--sap-blue,#0078d7); }
+
+.sap-service-card { border-color: rgba(0,120,215,0.25) !important; }
+.sap-service-card::before { background: linear-gradient(90deg,var(--sap-blue,#0078d7),var(--cyan)) !important; }
+.sap-more-link {
+  display:inline-block;margin-top:16px;
+  font-family:var(--font-mono);font-size:0.72rem;letter-spacing:0.08em;
+  color:var(--sap-blue,#0078d7);text-decoration:none;border-bottom:1px solid rgba(0,120,215,0.3);
+  transition:all .25s;
+}
+.sap-more-link:hover{color:var(--cyan);border-color:var(--cyan);}
+
+@media(max-width:900px){
+  .srv-panel,.srv-panel-alt { grid-template-columns:1fr; }
+  .srv-info { padding:48px 24px; }
+  .srv-code-wrap { border-left:none;border-top:1px solid var(--border);min-height:320px; }
+  .srv-panel-alt .srv-code-wrap { border-right:none;border-bottom:1px solid var(--border);order:-1; }
+}
+
+
+/* ── SAP SECTION ── */
+:root { --sap-blue:#0078d7; --sap-blue-dark:#005a9e; --sap-blue-glow:rgba(0,120,215,0.15); }
+.sap-section {
+  position:relative;overflow:hidden;
+  padding:120px 60px;
+  background:linear-gradient(180deg,var(--bg) 0%,#060c14 50%,var(--bg) 100%);
+  border-top:1px solid rgba(0,120,215,0.15);
+  border-bottom:1px solid rgba(0,120,215,0.15);
+}
+.sap-bg-grid {
+  position:absolute;inset:0;z-index:0;
+  background-image:
+    linear-gradient(rgba(0,120,215,0.04) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(0,120,215,0.04) 1px,transparent 1px);
+  background-size:50px 50px;
+}
+.sap-glow {
+  position:absolute;border-radius:50%;pointer-events:none;z-index:0;
+  filter:blur(80px);
+}
+.sap-glow-1 {
+  width:500px;height:500px;top:-100px;right:-100px;
+  background:radial-gradient(circle,rgba(0,120,215,0.12),transparent 70%);
+}
+.sap-glow-2 {
+  width:400px;height:400px;bottom:-80px;left:-80px;
+  background:radial-gradient(circle,rgba(0,212,255,0.08),transparent 70%);
+}
+.sap-section-sub {
+  font-family:var(--font-mono);font-size:0.85rem;color:var(--dim);
+  max-width:600px;margin-top:20px;line-height:1.8;
+}
+
+/* ── SAP HERO BANNER ── */
+.sap-hero-banner {
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:1fr 1.4fr;gap:60px;
+  align-items:center;margin-bottom:80px;
+  padding:48px;background:rgba(0,120,215,0.05);
+  border:1px solid rgba(0,120,215,0.2);
+}
+.sap-banner-left { display:flex;flex-direction:column;gap:40px; }
+.sap-logo-badge {
+  position:relative;width:120px;height:120px;
+  display:flex;align-items:center;justify-content:center;
+}
+.sap-logo-inner {
+  position:relative;z-index:2;text-align:center;
+  width:90px;height:90px;background:var(--sap-blue);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  border:2px solid rgba(255,255,255,0.2);
+}
+.sap-logo-text {
+  font-family:var(--font-ui);font-size:1.8rem;font-weight:800;
+  color:#fff;letter-spacing:0.05em;line-height:1;
+}
+.sap-logo-sub {
+  font-family:var(--font-mono);font-size:0.48rem;letter-spacing:0.1em;
+  color:rgba(255,255,255,0.7);text-transform:uppercase;
+}
+.sap-logo-ring {
+  position:absolute;inset:-15px;border:1px solid rgba(0,120,215,0.4);
+  border-radius:50%;animation:sapSpin 8s linear infinite;
+}
+.sap-logo-ring2 {
+  inset:-25px;border-color:rgba(0,212,255,0.2);
+  animation-duration:12s;animation-direction:reverse;
+}
+@keyframes sapSpin{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+.sap-banner-stats { display:flex;flex-direction:column;gap:16px; }
+.sap-stat { display:flex;align-items:center;gap:16px; }
+.sap-stat-num {
+  font-family:var(--font-display);font-size:1.8rem;font-weight:700;
+  color:var(--sap-blue);min-width:65px;line-height:1;
+}
+.sap-stat-label { font-family:var(--font-mono);font-size:0.72rem;color:var(--dim); }
+
+/* ── SAP CODE WINDOW ── */
+.sap-code-window {
+  background:#0a0e14;border:1px solid rgba(0,120,215,0.3);
+  font-family:var(--font-mono);overflow:hidden;
+  box-shadow:0 0 40px rgba(0,120,215,0.1);
+}
+.sap-code-bar {
+  display:flex;align-items:center;gap:8px;
+  padding:10px 16px;background:rgba(0,120,215,0.1);
+  border-bottom:1px solid rgba(0,120,215,0.2);
+}
+.sap-code-dot { width:12px;height:12px;border-radius:50; }
+.sap-code-filename {
+  font-size:0.68rem;color:var(--dim);letter-spacing:0.05em;margin-left:8px;
+}
+.sap-code-body { padding:20px 24px;font-size:0.78rem;line-height:1.9; }
+.code-line { white-space:pre; }
+.kw  { color:#569cd6; }
+.fn  { color:#dcdcaa; }
+.var { color:#9cdcfe; }
+.op  { color:#d4d4d4; }
+.num { color:#b5cea8; }
+.caret { color:var(--sap-blue);animation:blink .9s step-end infinite; }
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+/* ── SAP CARDS GRID ── */
+.sap-cards-grid {
+  position:relative;z-index:2;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:2px;
+  margin-bottom:48px;
+}
+.sap-card {
+  padding:40px 36px;position:relative;overflow:hidden;
+  background:rgba(0,8,18,0.6);border:1px solid rgba(0,120,215,0.15);
+  transition:all .4s;
+  backdrop-filter:blur(10px);
+}
+.sap-card:hover { border-color:rgba(0,120,215,0.5);transform:translateY(-6px); }
+.sap-card:hover .sap-card-glow { opacity:1; }
+.sap-card-wide { grid-column:span 3; }
+.sap-card-glow {
+  position:absolute;inset:0;opacity:0;transition:opacity .4s;
+  background:radial-gradient(ellipse at top left,rgba(0,120,215,0.08),transparent 60%);
+  pointer-events:none;
+}
+.sap-card-top { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+.sap-card-icon { font-size:2rem; }
+.sap-card-badge {
+  font-family:var(--font-mono);font-size:0.62rem;letter-spacing:0.1em;
+  text-transform:uppercase;color:var(--sap-blue);
+  border:1px solid rgba(0,120,215,0.35);padding:4px 10px;
+}
+.sap-card-title {
+  font-family:var(--font-ui);font-size:1.15rem;font-weight:700;
+  margin-bottom:12px;color:var(--text);
+}
+.sap-card-desc {
+  font-family:var(--font-mono);font-size:0.78rem;color:var(--dim);
+  line-height:1.75;margin-bottom:20px;
+}
+.sap-feature-list {
+  list-style:none;display:flex;flex-direction:column;gap:8px;
+}
+.sap-feature-list li {
+  font-family:var(--font-mono);font-size:0.72rem;color:var(--dim);
+  padding-left:16px;position:relative;
+}
+.sap-feature-list li::before {
+  content:'▸';position:absolute;left:0;color:var(--sap-blue);
+}
+.sap-support-tags { display:flex;flex-wrap:wrap;gap:8px;margin-top:8px; }
+.sap-tag {
+  padding:5px 14px;background:rgba(0,120,215,0.08);
+  border:1px solid rgba(0,120,215,0.25);
+  font-family:var(--font-mono);font-size:0.68rem;letter-spacing:0.06em;
+  color:rgba(0,180,255,0.9);
+}
+
+/* ── SAP CTA STRIP ── */
+.sap-cta-strip {
+  position:relative;z-index:2;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:24px;
+  padding:40px 48px;
+  background:linear-gradient(135deg,rgba(0,120,215,0.12),rgba(0,212,255,0.06));
+  border:1px solid rgba(0,120,215,0.3);
+}
+.sap-cta-title {
+  font-family:var(--font-display);font-size:1.8rem;font-weight:700;color:var(--text);
+  margin-bottom:6px;
+}
+.sap-cta-sub { font-family:var(--font-mono);font-size:0.75rem;color:var(--dim); }
+.sap-cta-btn {
+  padding:14px 36px;background:var(--sap-blue);color:#fff;
+  font-family:var(--font-mono);font-size:0.78rem;letter-spacing:0.08em;
+  text-transform:uppercase;border:none;cursor:pointer;
+  text-decoration:none;display:inline-block;transition:all .3s;
+  white-space:nowrap;
+}
+.sap-cta-btn:hover { background:var(--sap-blue-dark);transform:translateY(-2px); }
+
+/* Responsive */
+@media(max-width:900px){
+  .sap-hero-banner{grid-template-columns:1fr;gap:32px;}
+  .sap-cards-grid{grid-template-columns:1fr;}
+  .sap-card-wide{grid-column:span 1;}
+  .sap-section{padding:80px 24px;}
+  .sap-cta-strip{flex-direction:column;padding:32px 24px;text-align:center;}
+}
+  nav{padding:16px 24px;}
+  nav.scrolled{padding:12px 24px;}
+  .nav-links{display:none;}
+  section{padding:80px 24px;}
+  .hero-stats{display:none;}
+  .skills-wrapper,.about-grid,.contact-grid{grid-template-columns:1fr;gap:40px;}
+  .hero-title{font-size:clamp(2.8rem,12vw,6rem);}
+  footer{flex-direction:column;padding:32px 24px;text-align:center;}
+  .projects-grid{grid-template-columns:1fr;}
+  .services-grid{grid-template-columns:1fr;}
+}
+</style>
+</head>
+<body>
+
+<!-- CURSOR -->
+<div id="cursor"></div>
+<div id="cursor-trail"></div>
+
+<!-- TOAST -->
+<div id="toast"></div>
+
+<!-- NAV -->
+<nav id="navbar">
+  <div class="nav-logo">Dev<span>Craft</span></div>
+  <ul class="nav-links">
+    <li><a href="#work">Work</a></li>
+    <li><a href="#services">Services</a></li>
+    <li><a href="#sap-support" style="color:var(--sap-blue,#0078d7)">SAP Support</a></li>
+    <li><a href="#tickets" style="color:var(--sap-blue,#0078d7)">Ticket Tracker</a></li>
+    <li><a href="#skills">Skills</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  </ul>
+  <button class="nav-admin-btn" onclick="openAdmin()">⚡ Admin</button>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="hero-canvas"></canvas>
+  <div class="grid-bg"></div>
+  <div class="vignette"></div>
+  <div class="geo-float geo1"></div>
+  <div class="geo-float geo2"></div>
+  <div class="geo-float geo3"></div>
+
+  <div class="hero-content">
+    <div class="hero-badge">
+      <span class="hero-badge-dot"></span>
+      Available for freelance projects
+    </div>
+    <h1 class="hero-title">
+      <span>Crafting</span>
+      <span class="line-gold">Premium</span>
+      <span class="line-outline">Digital Worlds</span>
+    </h1>
+    <p class="hero-sub">I design and develop extraordinary web experiences that convert visitors into clients — blending cutting-edge animation with pixel-perfect precision.</p>
+    <div class="hero-ctas">
+      <a href="#work" class="btn-primary">View My Work</a>
+      <a href="#services" class="btn-outline">Our Services</a>
+    </div>
+  </div>
+
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num" data-count="120">0</div>
+      <div class="stat-label">Projects Done</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="98">0</div>
+      <div class="stat-label">Happy Clients</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num" data-count="5">0</div>
+      <div class="stat-label">Years Exp</div>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="mq1"></div>
+  <div class="marquee-track marquee-track2" id="mq2"></div>
+</div>
+
+<!-- WORK -->
+<section id="work">
+  <div class="section-header reveal">
+    <div class="section-label">Portfolio</div>
+    <h2 class="section-title">Selected <em>Work</em></h2>
+  </div>
+  <div class="filter-tabs reveal" id="filterTabs">
+    <button class="filter-tab active" data-filter="all">All Projects</button>
+    <button class="filter-tab" data-filter="Web Design">Web Design</button>
+    <button class="filter-tab" data-filter="App">App Development</button>
+    <button class="filter-tab" data-filter="E-Commerce">E-Commerce</button>
+    <button class="filter-tab" data-filter="Branding">Branding</button>
+  </div>
+  <div class="projects-grid" id="projectsGrid"></div>
+</section>
+
+<!-- SERVICES -->
+<section id="services" style="padding-bottom:0">
+  <div class="section-header reveal" style="padding-bottom:0">
+    <div class="section-label">What We Do</div>
+    <h2 class="section-title">Our <em>Services</em></h2>
+    <p style="font-family:var(--font-mono);font-size:0.83rem;color:var(--dim);max-width:560px;line-height:1.8;margin-top:16px;">Every service is backed by real production code. Watch live previews of exactly what we build for our clients.</p>
+  </div>
+</section>
+
+<!-- SERVICE 1: UI/UX DESIGN -->
+<div class="srv-panel reveal" id="srv1">
+  <div class="srv-info">
+    <div class="srv-num">01</div>
+    <div class="srv-icon">🎨</div>
+    <div class="srv-title">UI / UX Design</div>
+    <div class="srv-desc">Pixel-perfect interfaces crafted with research-driven UX principles. Wireframes, prototypes, and design systems that delight users and convert visitors.</div>
+    <ul class="srv-features">
+      <li>Figma design systems</li>
+      <li>Interactive prototypes</li>
+      <li>Component libraries</li>
+      <li>Accessibility-first design</li>
+    </ul>
+    <div class="srv-tags"><span>Figma</span><span>Adobe XD</span><span>CSS</span><span>Framer</span></div>
+  </div>
+  <div class="srv-code-wrap">
+    <div class="srv-code-window" data-lang="css" data-accent="#e879f9">
+      <div class="srv-code-bar">
+        <span class="srv-dot" style="background:#ff5f57"></span>
+        <span class="srv-dot" style="background:#febc2e"></span>
+        <span class="srv-dot" style="background:#28c840"></span>
+        <span class="srv-filename">styles/Button.module.css</span>
+        <span class="srv-lang-badge" style="color:#e879f9;border-color:rgba(232,121,249,0.3)">CSS</span>
+      </div>
+      <div class="srv-code-body" id="code-uiux"></div>
+    </div>
+    <div class="srv-preview srv-preview-uiux" id="preview-uiux">
+      <div class="uiux-card">
+        <div class="uiux-avatar"></div>
+        <div class="uiux-lines">
+          <div class="uiux-line uiux-line-1"></div>
+          <div class="uiux-line uiux-line-2"></div>
+        </div>
+        <div class="uiux-badge">Premium</div>
+      </div>
+      <div class="uiux-btn-row">
+        <div class="uiux-btn uiux-btn-primary">Get Started</div>
+        <div class="uiux-btn uiux-btn-ghost">Learn More</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE 2: WEB DEVELOPMENT -->
+<div class="srv-panel srv-panel-alt reveal" id="srv2">
+  <div class="srv-code-wrap">
+    <div class="srv-code-window" data-lang="jsx" data-accent="#61dafb">
+      <div class="srv-code-bar">
+        <span class="srv-dot" style="background:#ff5f57"></span>
+        <span class="srv-dot" style="background:#febc2e"></span>
+        <span class="srv-dot" style="background:#28c840"></span>
+        <span class="srv-filename">components/HeroSection.jsx</span>
+        <span class="srv-lang-badge" style="color:#61dafb;border-color:rgba(97,218,251,0.3)">React</span>
+      </div>
+      <div class="srv-code-body" id="code-web"></div>
+    </div>
+  </div>
+  <div class="srv-info">
+    <div class="srv-num">02</div>
+    <div class="srv-icon">⚡</div>
+    <div class="srv-title">Web Development</div>
+    <div class="srv-desc">Lightning-fast, accessible websites built with modern frameworks. React, Next.js, and custom animations that set brands apart from the competition.</div>
+    <ul class="srv-features">
+      <li>React & Next.js apps</li>
+      <li>SSR / SSG performance</li>
+      <li>REST & GraphQL APIs</li>
+      <li>GSAP & Framer Motion</li>
+    </ul>
+    <div class="srv-tags"><span>React</span><span>Next.js</span><span>Node.js</span><span>TypeScript</span></div>
+  </div>
+</div>
+
+<!-- SERVICE 3: APP DEVELOPMENT -->
+<div class="srv-panel reveal" id="srv3">
+  <div class="srv-info">
+    <div class="srv-num">03</div>
+    <div class="srv-icon">📱</div>
+    <div class="srv-title">App Development</div>
+    <div class="srv-desc">Cross-platform mobile applications with native performance. React Native and PWA solutions that work seamlessly on iOS, Android, and the web.</div>
+    <ul class="srv-features">
+      <li>React Native cross-platform</li>
+      <li>Native device APIs</li>
+      <li>Push notifications</li>
+      <li>Offline-first architecture</li>
+    </ul>
+    <div class="srv-tags"><span>React Native</span><span>Expo</span><span>Firebase</span><span>PWA</span></div>
+  </div>
+  <div class="srv-code-wrap">
+    <div class="srv-code-window" data-lang="rn" data-accent="#a3e635">
+      <div class="srv-code-bar">
+        <span class="srv-dot" style="background:#ff5f57"></span>
+        <span class="srv-dot" style="background:#febc2e"></span>
+        <span class="srv-dot" style="background:#28c840"></span>
+        <span class="srv-filename">screens/HomeScreen.tsx</span>
+        <span class="srv-lang-badge" style="color:#a3e635;border-color:rgba(163,230,53,0.3)">React Native</span>
+      </div>
+      <div class="srv-code-body" id="code-app"></div>
+    </div>
+    <!-- Mobile frame preview -->
+    <div class="srv-preview srv-preview-mobile">
+      <div class="mobile-frame">
+        <div class="mobile-notch"></div>
+        <div class="mobile-screen">
+          <div class="ms-header"></div>
+          <div class="ms-card"></div>
+          <div class="ms-card ms-card-sm"></div>
+          <div class="ms-row">
+            <div class="ms-btn"></div>
+            <div class="ms-btn ms-btn-ghost"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SERVICE 4: E-COMMERCE -->
+<div class="srv-panel srv-panel-alt reveal" id="srv4">
+  <div class="srv-code-wrap">
+    <div class="srv-code-window" data-lang="js" data-accent="#f0a500">
+      <div class="srv-code-bar">
+        <span class="srv-dot" style="background:#ff5f57"></span>
+        <span class="srv-dot" style="background:#febc2e"></span>
+        <span class="srv-dot" style="background:#28c840"></span>
+        <span class="srv-filename">api/checkout.js</span>
+        <span class="srv-lang-badge" style="color:#f0a500;border-color:rgba(240,165,0,0.3)">Node.js</span>
+      </div>
+      <div class="srv-code-body" id="code-ecom"></div>
+    </div>
+  </div>
+  <div class="srv-info">
+    <div class="srv-num">04</div>
+    <div class="srv-icon">🛒</div>
+    <div class="srv-title">E-Commerce</div>
+    <div class="srv-desc">High-converting online stores on Shopify, WooCommerce, or fully custom. Every element is optimized for sales, speed, and an outstanding user experience.</div>
+    <ul class="srv-features">
+      <li>Shopify & WooCommerce</li>
+      <li>Stripe / Razorpay payments</li>
+      <li>Inventory management</li>
+      <li>Conversion rate optimization</li>
+    </ul>
+    <div class="srv-tags"><span>Shopify</span><span>Stripe</span><span>PostgreSQL</span><span>Redis</span></div>
+  </div>
+</div>
+
+<!-- SERVICE 5: SAP TEASER PANEL -->
+<div class="srv-panel srv-sap-teaser reveal" id="srv5">
+  <div class="srv-info">
+    <div class="srv-num">05</div>
+    <div class="srv-icon">🔷</div>
+    <div class="srv-title" style="color:var(--sap-blue,#0078d7)">SAP Support</div>
+    <div class="srv-desc">End-to-end SAP ABAP development — ALV Reports, Smartforms, Adobe Forms, Module Pool programming, and full enterprise ABAP consulting.</div>
+    <ul class="srv-features" style="--gold:#0078d7">
+      <li>ALV Reports (CL_SALV_TABLE)</li>
+      <li>Smartforms & Adobe Forms</li>
+      <li>Module Pool / Dialog Programming</li>
+      <li>BAPI, RFC & IDoc integration</li>
+    </ul>
+    <div class="srv-tags" style="--gold:#0078d7">
+      <span style="color:#4da6ff;border-color:rgba(0,120,215,0.3);background:rgba(0,120,215,0.08)">ABAP</span>
+      <span style="color:#4da6ff;border-color:rgba(0,120,215,0.3);background:rgba(0,120,215,0.08)">SAP ECC</span>
+      <span style="color:#4da6ff;border-color:rgba(0,120,215,0.3);background:rgba(0,120,215,0.08)">S/4HANA</span>
+    </div>
+    <a href="#sap-support" class="btn-primary" style="background:var(--sap-blue,#0078d7);margin-top:28px;display:inline-block;text-decoration:none">Explore SAP Services →</a>
+  </div>
+  <div class="srv-code-wrap" style="border-color:rgba(0,120,215,0.2);background:rgba(0,6,14,0.9)">
+    <div class="srv-code-window" data-lang="abap" data-accent="#0078d7" style="border-color:rgba(0,120,215,0.2)">
+      <div class="srv-code-bar" style="background:rgba(0,120,215,0.08);border-color:rgba(0,120,215,0.15)">
+        <span class="srv-dot" style="background:#ff5f57"></span>
+        <span class="srv-dot" style="background:#febc2e"></span>
+        <span class="srv-dot" style="background:#28c840"></span>
+        <span class="srv-filename">ZMM_SMARTFORM_DRIVER.abap</span>
+        <span class="srv-lang-badge" style="color:#4da6ff;border-color:rgba(0,120,215,0.35)">ABAP</span>
+      </div>
+      <div class="srv-code-body" id="code-sap2"></div>
+    </div>
+  </div>
+</div>
+
+
+<!-- SAP SUPPORT SECTION -->
+<section id="sap-support" class="sap-section">
+  <div class="sap-bg-grid"></div>
+  <div class="sap-glow sap-glow-1"></div>
+  <div class="sap-glow sap-glow-2"></div>
+
+  <div class="section-header reveal" style="position:relative;z-index:2;">
+    <div class="section-label" style="color:var(--sap-blue)">SAP Expertise</div>
+    <h2 class="section-title">Enterprise <em style="color:var(--sap-blue)">SAP Support</em></h2>
+    <p class="sap-section-sub">Deep ABAP expertise combined with real-world enterprise project experience. I deliver robust, scalable SAP solutions that keep your business running at full speed.</p>
+  </div>
+
+  <!-- SAP HERO BANNER -->
+  <div class="sap-hero-banner reveal">
+    <div class="sap-banner-left">
+      <div class="sap-logo-badge">
+        <!-- Real SAP Logo Image -->
+        <div class="sap-real-logo">
+          <img src="https://companieslogo.com/img/orig/SAP_BIG-323a7da5.png" alt="SAP" style="width:100px;height:auto;filter:drop-shadow(0 0 16px rgba(0,159,219,0.5));border-radius:3px;">
+        </div>
+        <div class="sap-logo-ring"></div>
+        <div class="sap-logo-ring sap-logo-ring2"></div>
+      </div>
+    </div>
+    <div class="sap-banner-right">
+      <div class="sap-code-window">
+        <div class="sap-code-bar">
+          <span class="sap-code-dot" style="background:#ff5f57"></span>
+          <span class="sap-code-dot" style="background:#febc2e"></span>
+          <span class="sap-code-dot" style="background:#28c840"></span>
+          <span class="sap-code-filename">ZMY_ALV_REPORT.abap</span>
+        </div>
+        <div class="sap-code-body" id="sapCodeAnim">
+          <div class="code-line"><span class="kw">REPORT</span> <span class="fn">zmy_alv_report</span><span class="op">.</span></div>
+          <div class="code-line"></div>
+          <div class="code-line"><span class="kw">DATA</span><span class="op">:</span> <span class="var">lt_data</span> <span class="kw">TYPE TABLE OF</span> <span class="fn">mara</span><span class="op">,</span></div>
+          <div class="code-line">       <span class="var">lo_alv</span>  <span class="kw">TYPE REF TO</span> <span class="fn">cl_salv_table</span><span class="op">.</span></div>
+          <div class="code-line"></div>
+          <div class="code-line"><span class="kw">START-OF-SELECTION</span><span class="op">.</span></div>
+          <div class="code-line">  <span class="kw">SELECT</span> <span class="op">*</span> <span class="kw">FROM</span> <span class="fn">mara</span></div>
+          <div class="code-line">    <span class="kw">INTO TABLE</span> <span class="var">lt_data</span></div>
+          <div class="code-line">    <span class="kw">UP TO</span> <span class="num">100</span> <span class="kw">ROWS</span><span class="op">.</span></div>
+          <div class="code-line"></div>
+          <div class="code-line">  <span class="fn">cl_salv_table</span><span class="op">=></span><span class="fn">factory</span><span class="op">(</span></div>
+          <div class="code-line">    <span class="kw">IMPORTING</span> <span class="var">r_salv_table</span> <span class="op">=</span> <span class="var">lo_alv</span></div>
+          <div class="code-line">    <span class="kw">CHANGING</span>  <span class="var">t_table</span>      <span class="op">=</span> <span class="var">lt_data</span> <span class="op">).</span></div>
+          <div class="code-line">  <span class="var">lo_alv</span><span class="op">-></span><span class="fn">display</span><span class="op">( ).</span></div>
+          <div class="code-line caret-line"><span class="caret">█</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SAP SERVICES CARDS -->
+  <div class="sap-cards-grid">
+
+    <div class="sap-card reveal" data-delay="0">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">📊</div>
+        <div class="sap-card-badge">ABAP</div>
+      </div>
+      <div class="sap-card-title">ALV Reports</div>
+      <div class="sap-card-desc">Custom ALV Grid and List reports using CL_SALV_TABLE, REUSE_ALV_GRID_DISPLAY, and OOP ALV. Interactive reports with sorting, filtering, totals, and export to Excel.</div>
+      <ul class="sap-feature-list">
+        <li>CL_SALV_TABLE & REUSE_ALV</li>
+        <li>Interactive columns & hotspots</li>
+        <li>Subtotals, color coding & icons</li>
+        <li>Excel & PDF export</li>
+        <li>Custom toolbar buttons & F4 help</li>
+      </ul>
+      <div class="sap-card-glow"></div>
+    </div>
+
+    <div class="sap-card reveal" data-delay="1">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">📄</div>
+        <div class="sap-card-badge">Print</div>
+      </div>
+      <div class="sap-card-title">Smartforms</div>
+      <div class="sap-card-desc">Enterprise-grade SAP Smartforms for invoices, delivery notes, purchase orders, and any business documents — with multi-language and multi-currency support.</div>
+      <ul class="sap-feature-list">
+        <li>Invoice & PO Smartforms</li>
+        <li>Dynamic table & text elements</li>
+        <li>Logo & barcode integration</li>
+        <li>Multi-language output</li>
+        <li>Function module driver programs</li>
+      </ul>
+      <div class="sap-card-glow"></div>
+    </div>
+
+    <div class="sap-card reveal" data-delay="2">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">📑</div>
+        <div class="sap-card-badge">Adobe</div>
+      </div>
+      <div class="sap-card-title">Adobe Forms</div>
+      <div class="sap-card-desc">Interactive and print-ready Adobe PDF forms using SAP Adobe Document Services (ADS). Pixel-perfect layouts replacing legacy Smartforms with modern fillable PDFs.</div>
+      <ul class="sap-feature-list">
+        <li>Interactive PDF forms</li>
+        <li>ADS configuration & setup</li>
+        <li>Form interface & context design</li>
+        <li>Fillable & digital signature fields</li>
+        <li>Smartform to Adobe migration</li>
+      </ul>
+      <div class="sap-card-glow"></div>
+    </div>
+
+    <div class="sap-card reveal" data-delay="3">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">🖥️</div>
+        <div class="sap-card-badge">Screen</div>
+      </div>
+      <div class="sap-card-title">Module Pool Programming</div>
+      <div class="sap-card-desc">Custom screen-based SAP applications using Module Pool (Dialog Programming). Complex user interfaces with multi-screen navigation, tabstrips, and real-time validations.</div>
+      <ul class="sap-feature-list">
+        <li>Custom dynpro screens</li>
+        <li>Tabstrips & subscreen areas</li>
+        <li>Table controls & step loops</li>
+        <li>PAI / PBO event handling</li>
+        <li>Transaction code creation</li>
+      </ul>
+      <div class="sap-card-glow"></div>
+    </div>
+
+    <div class="sap-card reveal" data-delay="4">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">🔗</div>
+        <div class="sap-card-badge">Integration</div>
+      </div>
+      <div class="sap-card-title">BAPI & RFC Integration</div>
+      <div class="sap-card-desc">Seamless SAP integration using BAPIs, RFC function modules, and IDocs for connecting SAP with third-party systems, portals, and APIs.</div>
+      <ul class="sap-feature-list">
+        <li>BAPI & RFC development</li>
+        <li>IDoc configuration & monitoring</li>
+        <li>REST API to SAP bridges</li>
+        <li>SAP ↔ Non-SAP integration</li>
+        <li>LSMW & BDC data migration</li>
+      </ul>
+      <div class="sap-card-glow"></div>
+    </div>
+
+    <div class="sap-card sap-card-wide reveal" data-delay="5">
+      <div class="sap-card-top">
+        <div class="sap-card-icon">🛠️</div>
+        <div class="sap-card-badge">Support</div>
+      </div>
+      <div class="sap-card-title">General SAP Support & Consulting</div>
+      <div class="sap-card-desc">Ongoing SAP support, bug fixes, performance tuning, and ABAP consulting for your live production systems. Fast turnaround, transparent communication.</div>
+      <div class="sap-support-tags">
+        <span class="sap-tag">User Exits & BADIs</span>
+        <span class="sap-tag">Enhancement Spots</span>
+        <span class="sap-tag">Performance Tuning</span>
+        <span class="sap-tag">Debugging & Analysis</span>
+        <span class="sap-tag">Transport Management</span>
+        <span class="sap-tag">Basis Support</span>
+        <span class="sap-tag">Authorization Objects</span>
+        <span class="sap-tag">Data Dictionary (DDIC)</span>
+        <span class="sap-tag">SAP Query & SQ01</span>
+        <span class="sap-tag">ABAP Code Review</span>
+      </div>
+      <div class="sap-card-glow"></div>
+    </div>
+
+  </div>
+
+  <!-- SAP CTA STRIP -->
+  <div class="sap-cta-strip reveal">
+    <div class="sap-cta-left">
+      <div class="sap-cta-title">Need SAP Development Support?</div>
+      <div class="sap-cta-sub">Available for remote SAP projects worldwide · Quick response · Competitive pricing</div>
+    </div>
+    <a href="#contact" class="sap-cta-btn">Get SAP Support →</a>
+  </div>
+
+</section>
+
+<!-- SAP TICKET TRACKER -->
+<section id="tickets">
+  <div class="section-header reveal">
+    <div class="section-label" style="color:var(--sap-blue,#0078d7)">Live Tracker</div>
+    <h2 class="section-title">SAP Support <em style="color:var(--sap-blue,#0078d7)">Tickets</em></h2>
+    <p style="font-family:var(--font-mono);font-size:0.82rem;color:var(--dim);max-width:560px;margin-top:16px;line-height:1.8;">Real-world SAP issues we have diagnosed, developed, and resolved for our clients. Updated live from our admin panel.</p>
+  </div>
+  <div class="ticket-stats reveal" id="ticketStats"></div>
+  <div class="ticket-filters reveal" id="ticketFilters">
+    <button class="ticket-filter active" data-tf="all">All Tickets</button>
+    <button class="ticket-filter" data-tf="Resolved">✅ Resolved</button>
+    <button class="ticket-filter" data-tf="In Progress">🔄 In Progress</button>
+    <button class="ticket-filter" data-tf="Open">🔴 Open</button>
+  </div>
+  <div class="ticket-grid reveal" id="ticketGrid"></div>
+</section>
+
+<!-- SKILLS -->
+<section id="skills">
+  <div class="skills-wrapper">
+    <div class="skills-text reveal">
+      <div class="section-label">Expertise</div>
+      <h2 class="section-title">Our <em>Skill</em> Stack</h2>
+      <p>A cross-functional team combining deep SAP ABAP enterprise expertise with modern web and mobile development. We deliver across the full technology spectrum — from legacy ERP to cutting-edge AI-powered interfaces.</p>
+      <a href="#contact" class="btn-primary">Start a Project</a>
+    </div>
+    <div class="skills-bars reveal" id="skillsBars">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+</section>
+
+<!-- ABOUT -->
+<section id="about">
+  <div class="about-grid">
+    <div class="about-img-wrap reveal">
+      <div class="about-img-frame">👨‍💻</div>
+      <div class="about-corner"></div>
+    </div>
+    <div class="about-text reveal">
+      <div class="section-label">About Us</div>
+      <h2 class="section-title">Enterprise <em>Developers</em> & Innovators</h2>
+      <p>We are a focused team specializing in SAP ABAP solutions and modern web development. We deliver enterprise-grade applications that combine technical excellence with real business impact. Every project is an opportunity to solve complex problems and exceed expectations.</p>
+      <p>We believe in transparency, quality code, and partnerships built on trust. Our clients return because we understand their business first, then engineer perfect solutions. No shortcuts. No templates. Just solid, production-ready work.</p>
+      <div class="about-counters" id="aboutStats">
+        <!-- Rendered dynamically from admin panel -->
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials" style="background:var(--surface)">
+  <div class="section-header reveal">
+    <div class="section-label">Reviews</div>
+    <h2 class="section-title">Client <em>Testimonials</em></h2>
+  </div>
+  <div class="testimonials-slider reveal">
+    <div class="testimonials-track" id="testimonialTrack"></div>
+    <div class="slider-controls">
+      <button class="slider-btn" onclick="slideTestimonial(-1)">←</button>
+      <button class="slider-btn" onclick="slideTestimonial(1)">→</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-grid">
+    <div class="contact-info reveal">
+      <div class="section-label">Get In Touch</div>
+      <h2 class="section-title">Let's Build <em>Together</em></h2>
+      <p>Have a project in mind? I'd love to hear about it. Drop me a message and let's create something extraordinary together.</p>
+      <div class="contact-details">
+        <div class="contact-item">
+          <div class="contact-icon">📧</div>
+          <div>
+            <div class="contact-item-label">Email</div>
+            <div class="contact-item-val">hello@devcraft.studio</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">📍</div>
+          <div>
+            <div class="contact-item-label">Location</div>
+            <div class="contact-item-val">Mumbai, India — Remote Worldwide</div>
+          </div>
+        </div>
+        <div class="contact-item">
+          <div class="contact-icon">⏱️</div>
+          <div>
+            <div class="contact-item-label">Response Time</div>
+            <div class="contact-item-val">Within 24 hours</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <form class="contact-form reveal" onsubmit="submitForm(event)">
+      <div class="form-group">
+        <label class="form-label">Your Name</label>
+        <input type="text" placeholder="John Doe" required>
+      </div>
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Email</label>
+          <input type="email" placeholder="you@example.com" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Budget</label>
+          <select>
+            <option value="">Select range</option>
+            <option>$500 – $1,000</option>
+            <option>$1,000 – $5,000</option>
+            <option>$5,000 – $15,000</option>
+            <option>$15,000+</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Project Brief</label>
+        <textarea placeholder="Tell me about your project..."></textarea>
+      </div>
+      <button type="submit" class="btn-primary" style="align-self:flex-start">Send Message →</button>
+    </form>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Dev<span>Craft</span></div>
+  <div class="footer-copy">© 2025 DevCraft Studio. All rights reserved.</div>
+  <div class="social-links">
+    <a class="social-link" href="#" title="GitHub">⌨</a>
+    <a class="social-link" href="#" title="LinkedIn">in</a>
+    <a class="social-link" href="#" title="Dribbble">🏀</a>
+    <a class="social-link" href="#" title="Twitter">𝕏</a>
+  </div>
+</footer>
+
+<!-- ADMIN PANEL -->
+<div id="admin-overlay">
+  <div class="admin-backdrop" onclick="closeAdmin()"></div>
+  <div class="admin-panel">
+    <div class="admin-header">
+      <div class="admin-title">Admin <span>Panel</span></div>
+      <button class="admin-close" onclick="closeAdmin()">✕</button>
+    </div>
+    <div class="admin-body" id="adminBody">
+      <!-- Gate / Content rendered by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- CONFIRM MODAL -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal-box">
+    <h3>Delete Project?</h3>
+    <p>This action cannot be undone. The project will be permanently removed from your portfolio.</p>
+    <div class="modal-btns">
+      <button class="admin-btn cancel" onclick="closeModal()">Cancel</button>
+      <button class="admin-btn del" id="confirmDelBtn">Delete</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const DEFAULT_PROJECTS = [];
+
+const SKILLS = [
+  { name:'SAP ABAP Development', pct:96 },
+  { name:'ALV Reports & Smartforms', pct:95 },
+  { name:'Adobe Forms & Module Pool', pct:92 },
+  { name:'React & Next.js', pct:90 },
+  { name:'UI / UX Design (Figma)', pct:88 },
+  { name:'Node.js & REST APIs', pct:85 },
+  { name:'React Native (Mobile)', pct:82 },
+  { name:'AI Integration & Automation', pct:80 },
+];
+
+const TESTIMONIALS = [
+  {
+    text:'"DevCraft Studio delivered a product that exceeded every expectation. Their approach is methodical, creative, and deeply professional. The web platform they built for us handles real-world enterprise complexity with stunning design — our stakeholders were genuinely impressed at the first demo. What sets this team apart is their ability to understand the business problem first, then engineer the perfect solution. Communication was transparent throughout, timelines were respected, and the quality of code is production-grade. I would confidently recommend them to any organisation looking for serious digital transformation."',
+    name:'Panchanana Dash',
+    role:'CEO & Founder',
+    emoji:'👨‍💼',
+    company:'Technology Solutions'
+  },
+  {
+    text:'"As a Founder specialising in SAP ABAP and AI-based enterprise services, I have worked with many developers globally — DevCraft Studio stands in a league of their own. Their SAP ABAP expertise is thorough and real: ALV reports delivered with zero defects, Smartforms output exactly matching business requirements, and Module Pool screens that users actually find intuitive. Beyond SAP, their AI integration work demonstrated a rare ability to bridge legacy ERP with modern intelligence. If you are looking for a partner who speaks both business and technology fluently, this is the team."',
+    name:'Vivek Tungaria',
+    role:'Founder & Director — SAP ABAP Expert & AI-Based Services',
+    emoji:'🔷',
+    company:'Enterprise AI & SAP Solutions'
+  },
+];
+
+const MARQUEE_ITEMS = ['Web Design','React','UI/UX','Next.js','SAP ABAP','ALV Reports','Smartforms','Adobe Forms','Module Pool','E-Commerce','Mobile Apps','Branding'];
+
+const ADMIN_PASSWORD = 'admin2025';
+
+// ── TICKET STATE ──
+let tickets = [];
+let activeTicketFilter = 'all';
+
+// ── ABOUT STATS ──
+let aboutStats = [];
+
+function loadAboutStats(){
+  try {
+    const saved = localStorage.getItem('dc_about_stats');
+    aboutStats = saved ? JSON.parse(saved) : [
+      { label:'Projects Delivered', value:'0', suffix:'+' },
+      { label:'Client Satisfaction', value:'0', suffix:'%' },
+      { label:'Global Reach', value:'0', suffix:'+' }
+    ];
+  } catch(e){ 
+    aboutStats = [
+      { label:'Projects Delivered', value:'0', suffix:'+' },
+      { label:'Client Satisfaction', value:'0', suffix:'%' },
+      { label:'Global Reach', value:'0', suffix:'+' }
+    ];
+  }
+}
+function saveAboutStats(){ localStorage.setItem('dc_about_stats', JSON.stringify(aboutStats)); }
+
+function renderAboutStats(){
+  const el = document.getElementById('aboutStats');
+  if(!el) return;
+  el.innerHTML = aboutStats.map(s=>`
+    <div class="counter-item">
+      <div class="num" data-count="${s.value}">${s.value}${s.suffix}</div>
+      <div class="label">${s.label}</div>
+    </div>
+  `).join('');
+}
+
+function loadTickets(){
+  try { tickets = JSON.parse(localStorage.getItem('dc_tickets') || '[]'); }
+  catch(e){ tickets = []; }
+}
+function saveTickets(){ localStorage.setItem('dc_tickets', JSON.stringify(tickets)); }
+function getNextTicketId(){
+  if(!tickets.length) return 'SAP-001';
+  const nums = tickets.map(t => parseInt(t.id.split('-')[1]||0));
+  return 'SAP-' + String(Math.max(...nums)+1).padStart(3,'0');
+}
+
+// ── RENDER TICKETS ──
+function renderTickets(){
+  const filtered = activeTicketFilter==='all' ? tickets : tickets.filter(t=>t.status===activeTicketFilter);
+  const grid = document.getElementById('ticketGrid');
+  if(!grid) return;
+
+  // stats
+  const resolved = tickets.filter(t=>t.status==='Resolved').length;
+  const inprog   = tickets.filter(t=>t.status==='In Progress').length;
+  const open     = tickets.filter(t=>t.status==='Open').length;
+  const statsEl  = document.getElementById('ticketStats');
+  if(statsEl) statsEl.innerHTML = `
+    <div class="ts-item"><span class="ts-num total">${tickets.length}</span><span class="ts-label">Total Tickets</span></div>
+    <div class="ts-item"><span class="ts-num resolved">${resolved}</span><span class="ts-label">Resolved</span></div>
+    <div class="ts-item"><span class="ts-num progress">${inprog}</span><span class="ts-label">In Progress</span></div>
+    <div class="ts-item"><span class="ts-num open">${open}</span><span class="ts-label">Open</span></div>
+  `;
+
+  if(!filtered.length){
+    grid.innerHTML = `<div class="ticket-empty"><div class="t-icon">🎫</div><div class="t-title">${tickets.length===0?'No Tickets Yet':'No Tickets in This Category'}</div><div class="t-sub">${tickets.length===0?'SAP support tickets will appear here once added from the admin panel.':'Try selecting a different filter above.'}</div></div>`;
+    return;
+  }
+
+  const statusClass = { 'Resolved':'resolved','In Progress':'progress','Open':'open' };
+  grid.innerHTML = filtered.map(t=>`
+    <div class="ticket-card status-${statusClass[t.status]||'open'} reveal">
+      <div class="ticket-header">
+        <div>
+          <div class="ticket-id">${t.id}</div>
+          <div class="ticket-title">${t.title}</div>
+        </div>
+        <span class="ticket-badge ${statusClass[t.status]||'open'}">${t.status}</span>
+      </div>
+      <div class="ticket-desc">${t.desc}</div>
+      <div class="ticket-meta">
+        ${(t.tags||[]).map(tag=>`<span class="ticket-tag">${tag}</span>`).join('')}
+        <span class="ticket-date">${t.date||''}</span>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ticket filter clicks
+document.addEventListener('click', e => {
+  const btn = e.target.closest('.ticket-filter');
+  if(!btn) return;
+  document.querySelectorAll('.ticket-filter').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeTicketFilter = btn.dataset.tf;
+  renderTickets();
+});
+
+// ── STATE ──
+let projects = [];
+let adminUnlocked = false;
+let editingId = null;
+let currentSlide = 0;
+let deleteTargetId = null;
+let activeFilter = 'all';
+
+// ── INIT ──
+function loadProjects(){
+  try{
+    const saved = localStorage.getItem('dc_projects');
+    // If saved projects are the old fake ones, clear them
+    if(saved){
+      const parsed = JSON.parse(saved);
+      const fakeIds = ['LuxeCart E-Commerce','NeuroApp Dashboard','Aurore Brand Identity','MediSync Health Portal','CryptoFlow Wallet','Verso Magazine'];
+      const hasFake = parsed.some(p => fakeIds.includes(p.title));
+      if(hasFake){ localStorage.removeItem('dc_projects'); projects = []; }
+      else { projects = parsed; }
+    } else { projects = []; }
+  } catch(e){ projects = []; }
+}
+function saveProjects(){ localStorage.setItem('dc_projects',JSON.stringify(projects)); }
+function getNextId(){ return projects.length ? Math.max(...projects.map(p=>p.id))+1 : 1; }
+
+// ── RENDER PROJECTS ──
+function renderProjects(){
+  const grid = document.getElementById('projectsGrid');
+  const filtered = activeFilter==='all' ? projects : projects.filter(p=>p.category===activeFilter);
+  if(!filtered.length){
+    const isEmpty = projects.length === 0;
+    grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:100px 24px;">
+      <div style="font-size:3rem;margin-bottom:20px">${isEmpty ? '🚀' : '🔍'}</div>
+      <div style="font-family:var(--font-display);font-size:1.8rem;font-weight:700;margin-bottom:12px;color:var(--text)">${isEmpty ? 'Projects Coming Soon' : 'No projects in this category'}</div>
+      <div style="font-family:var(--font-mono);font-size:0.78rem;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.7">${isEmpty ? 'Real client work will be showcased here. Check back soon or reach out to discuss your project.' : 'Try selecting a different category above.'}</div>
+    </div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map((p,i)=>`
+    <div class="project-card" style="animation-delay:${i*0.08}s">
+      <div class="card-img" style="background:${p.color}22">
+        ${p.imageUrl ? `<img src="${p.imageUrl}" alt="${p.title}" onerror="this.style.display='none'">` : ''}
+        <div class="card-img-placeholder">${p.emoji||'🌟'}</div>
+        <span class="card-tag">${p.category}</span>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${p.title}</div>
+        <div class="card-desc">${p.desc}</div>
+        <div class="card-tech">${(p.tech||[]).map(t=>`<span class="tech-pill">${t}</span>`).join('')}</div>
+        <div class="card-actions">
+          ${p.link ? `<a href="${p.link}" target="_blank" class="card-btn">View Live ↗</a>` : ''}
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── FILTER TABS ──
+document.getElementById('filterTabs').addEventListener('click',e=>{
+  const btn = e.target.closest('.filter-tab');
+  if(!btn) return;
+  document.querySelectorAll('.filter-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  activeFilter = btn.dataset.filter;
+  renderProjects();
+});
+
+// ── RENDER SKILLS ──
+function renderSkills(){
+  document.getElementById('skillsBars').innerHTML = SKILLS.map(s=>`
+    <div class="skill-item">
+      <div class="skill-info">
+        <span class="skill-name">${s.name}</span>
+        <span class="skill-pct">${s.pct}%</span>
+      </div>
+      <div class="skill-bar"><div class="skill-fill" data-pct="${s.pct}"></div></div>
+    </div>
+  `).join('');
+}
+
+// ── TESTIMONIALS ──
+function renderTestimonials(){
+  const track = document.getElementById('testimonialTrack');
+  track.innerHTML = TESTIMONIALS.map(t=>`
+    <div class="testimonial-card">
+      <div class="quote-mark">"</div>
+      <div class="testimonial-text">${t.text}</div>
+      <div class="testimonial-author">
+        <div class="author-avatar">${t.emoji}</div>
+        <div class="author-info">
+          <div class="name">${t.name}</div>
+          <div class="role">${t.role}</div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+function slideTestimonial(dir){
+  currentSlide = (currentSlide+dir+TESTIMONIALS.length)%TESTIMONIALS.length;
+  document.getElementById('testimonialTrack').style.transform=`translateX(-${currentSlide*100}%)`;
+}
+
+// ── MARQUEE ──
+function renderMarquee(){
+  const items = [...MARQUEE_ITEMS,...MARQUEE_ITEMS].map(i=>`<span class="marquee-item">${i}</span>`).join('');
+  document.getElementById('mq1').innerHTML = items;
+  document.getElementById('mq2').innerHTML = items;
+}
+
+// ── CANVAS PARTICLES ──
+function initCanvas(){
+  const canvas = document.getElementById('hero-canvas');
+  const ctx = canvas.getContext('2d');
+  let W,H,particles=[];
+  function resize(){ W=canvas.width=window.innerWidth; H=canvas.height=window.innerHeight; }
+  resize(); window.addEventListener('resize',resize);
+  class Particle{
+    constructor(){ this.reset(); }
+    reset(){ this.x=Math.random()*W; this.y=Math.random()*H; this.r=Math.random()*1.5+0.3; this.vx=(Math.random()-0.5)*0.3; this.vy=(Math.random()-0.5)*0.3; this.a=Math.random(); this.da=0.003+Math.random()*0.005; this.phase=Math.random()*Math.PI*2; }
+    update(t){ this.x+=this.vx; this.y+=this.vy; this.a=0.3+0.5*Math.sin(t*this.da+this.phase); if(this.x<0||this.x>W||this.y<0||this.y>H)this.reset(); }
+    draw(){ ctx.beginPath();ctx.arc(this.x,this.y,this.r,0,Math.PI*2);ctx.fillStyle=`rgba(240,165,0,${this.a})`;ctx.fill(); }
+  }
+  for(let i=0;i<120;i++) particles.push(new Particle());
+  function drawLines(){
+    for(let i=0;i<particles.length;i++){
+      for(let j=i+1;j<particles.length;j++){
+        const dx=particles[i].x-particles[j].x, dy=particles[i].y-particles[j].y;
+        const d=Math.sqrt(dx*dx+dy*dy);
+        if(d<100){ ctx.beginPath();ctx.moveTo(particles[i].x,particles[i].y);ctx.lineTo(particles[j].x,particles[j].y);ctx.strokeStyle=`rgba(240,165,0,${0.04*(1-d/100)})`;ctx.lineWidth=0.5;ctx.stroke(); }
+      }
+    }
+  }
+  let t=0;
+  function loop(){ t+=0.01;ctx.clearRect(0,0,W,H);drawLines();particles.forEach(p=>{p.update(t);p.draw();}); requestAnimationFrame(loop); }
+  loop();
+}
+
+// ── SCROLL ANIMATIONS ──
+const observer = new IntersectionObserver(entries=>{
+  entries.forEach(entry=>{
+    if(entry.isIntersecting){
+      entry.target.classList.add('visible');
+      // animate skill bars
+      if(entry.target.closest('#skills')){
+        document.querySelectorAll('.skill-fill').forEach(bar=>{
+          setTimeout(()=>{ bar.style.width=bar.dataset.pct+'%'; },300);
+        });
+      }
+    }
+  });
+},{threshold:0.1});
+function initObserver(){ document.querySelectorAll('.reveal').forEach(el=>observer.observe(el)); }
+
+// ── NAV SCROLL ──
+window.addEventListener('scroll',()=>{
+  document.getElementById('navbar').classList.toggle('scrolled',window.scrollY>60);
+});
+
+// ── COUNTER ANIM ──
+function animateCounters(){
+  document.querySelectorAll('[data-count]').forEach(el=>{
+    const target=+el.dataset.count, start=Date.now();
+    const dur=1800;
+    function tick(){
+      const elapsed=Date.now()-start;
+      const val=Math.min(Math.round((elapsed/dur)*target),target);
+      el.textContent=val+(el.textContent.includes('%')?'%':'+');
+      if(val<target) requestAnimationFrame(tick);
+    }
+    tick();
+  });
+}
+const counterObserver = new IntersectionObserver(entries=>{
+  if(entries[0].isIntersecting){ animateCounters(); counterObserver.disconnect(); }
+},{threshold:0.3});
+
+// ── CUSTOM CURSOR ──
+function initCursor(){
+  const cursor=document.getElementById('cursor'), trail=document.getElementById('cursor-trail');
+  document.addEventListener('mousemove',e=>{
+    cursor.style.left=e.clientX+'px'; cursor.style.top=e.clientY+'px';
+    setTimeout(()=>{ trail.style.left=e.clientX+'px'; trail.style.top=e.clientY+'px'; },80);
+  });
+  document.querySelectorAll('a,button,.project-card,.filter-tab').forEach(el=>{
+    el.addEventListener('mouseenter',()=>{ cursor.style.width='24px';cursor.style.height='24px'; trail.style.width='60px';trail.style.height='60px'; });
+    el.addEventListener('mouseleave',()=>{ cursor.style.width='12px';cursor.style.height='12px'; trail.style.width='40px';trail.style.height='40px'; });
+  });
+}
+
+// ── ADMIN PANEL ──
+function openAdmin(){
+  document.getElementById('admin-overlay').classList.add('open');
+  renderAdminBody();
+}
+function closeAdmin(){
+  document.getElementById('admin-overlay').classList.remove('open');
+  editingId=null;
+}
+
+function renderAdminBody(){
+  const body=document.getElementById('adminBody');
+  if(!adminUnlocked){
+    body.innerHTML=`
+      <div class="admin-gate">
+        <div class="gate-icon">🔐</div>
+        <h3>Admin Access</h3>
+        <p>Enter your admin password to manage portfolio content.</p>
+        <input type="password" id="adminPwInput" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkPassword()">
+        <div class="error" id="pwError"></div>
+        <button class="btn-primary" onclick="checkPassword()">Unlock Panel</button>
+      </div>`;
+    return;
+  }
+  body.innerHTML=`
+    <!-- PROJECTS -->
+    <div class="admin-section-title">Add / Edit Project</div>
+    <div class="admin-form" id="adminForm">
+      <input type="hidden" id="editId">
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Project Title *</label>
+          <input type="text" id="f_title" placeholder="My Awesome Project">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Category *</label>
+          <select id="f_cat">
+            <option value="">Select category</option>
+            <option>Web Design</option>
+            <option>App</option>
+            <option>E-Commerce</option>
+            <option>Branding</option>
+            <option>SAP</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description *</label>
+        <textarea id="f_desc" placeholder="Brief description of the project..."></textarea>
+      </div>
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Tech Stack (comma-separated)</label>
+          <input type="text" id="f_tech" placeholder="React, Node.js, Tailwind">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Accent Color</label>
+          <input type="color" id="f_color" value="#f0a500" style="height:46px;padding:4px 8px;cursor:pointer;">
+        </div>
+      </div>
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Emoji / Icon</label>
+          <input type="text" id="f_emoji" placeholder="🌟" maxlength="4">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Live URL</label>
+          <input type="url" id="f_link" placeholder="https://example.com">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Image URL (optional)</label>
+        <input type="url" id="f_img" placeholder="https://cdn.example.com/project.jpg">
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="admin-btn save" onclick="saveProject()">💾 Save Project</button>
+        <button class="admin-btn cancel" onclick="cancelEdit()" id="cancelBtn" style="display:none">✕ Cancel</button>
+      </div>
+    </div>
+    <div class="admin-section-title" style="margin-top:16px">Manage Projects (${projects.length})</div>
+    <div class="admin-projects-list">
+      ${projects.length===0?`<div style="text-align:center;padding:32px;font-family:var(--font-mono);font-size:0.78rem;color:var(--muted)">No projects yet. Add your first one above.</div>`:projects.map(p=>`
+        <div class="admin-project-item" id="aitem_${p.id}">
+          <div>
+            <div style="font-size:1.4rem;margin-bottom:6px">${p.emoji||'🌟'}</div>
+            <div class="admin-project-info">
+              <div class="title">${p.title}</div>
+              <div class="cat">${p.category}</div>
+            </div>
+          </div>
+          <div class="admin-project-btns">
+            <button class="admin-btn edit" onclick="editProject(${p.id})">✎ Edit</button>
+            <button class="admin-btn del" onclick="confirmDelete(${p.id})">🗑 Delete</button>
+          </div>
+        </div>
+      `).join('')}
+    </div>
+
+    <!-- SAP TICKETS -->
+    <div class="admin-section-title" style="margin-top:48px">🎫 Add SAP Support Ticket</div>
+    <div class="admin-form" id="ticketForm">
+      <input type="hidden" id="t_editId">
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Ticket Title *</label>
+          <input type="text" id="t_title" placeholder="e.g. ALV Report - Material Master">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Status *</label>
+          <select id="t_status">
+            <option value="Open">🔴 Open</option>
+            <option value="In Progress">🔄 In Progress</option>
+            <option value="Resolved" selected>✅ Resolved</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Description — what was the issue & how was it solved *</label>
+        <textarea id="t_desc" placeholder="Customer reported issue with ALV report not displaying vendor data. Root cause: incorrect join condition on LFA1. Fixed SELECT query with proper alias and inner join on LIFNR field."></textarea>
+      </div>
+      <div class="admin-form-row">
+        <div class="form-group">
+          <label class="form-label">Tags (comma-separated)</label>
+          <input type="text" id="t_tags" placeholder="ALV Report, LFA1, ABAP">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Date</label>
+          <input type="date" id="t_date">
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:8px;">
+        <button class="admin-btn save" onclick="saveTicket()">🎫 Save Ticket</button>
+        <button class="admin-btn cancel" onclick="cancelTicketEdit()" id="tCancelBtn" style="display:none">✕ Cancel</button>
+      </div>
+    </div>
+    <div class="admin-section-title" style="margin-top:16px">Manage Tickets (${tickets.length})</div>
+    <div class="admin-projects-list">
+      ${tickets.length===0?`<div style="text-align:center;padding:32px;font-family:var(--font-mono);font-size:0.78rem;color:var(--muted)">No tickets yet. Add your first one above.</div>`:tickets.map(t=>{
+        const sc={'Resolved':'resolved','In Progress':'progress','Open':'open'};
+        return `
+        <div class="admin-project-item">
+          <div style="flex:1;min-width:0">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+              <span style="font-family:var(--font-mono);font-size:0.62rem;color:var(--muted)">${t.id}</span>
+              <span class="ticket-badge ${sc[t.status]||'open'}" style="font-size:0.58rem">${t.status}</span>
+            </div>
+            <div class="admin-project-info">
+              <div class="title" style="font-size:0.88rem">${t.title}</div>
+              <div class="cat">${(t.tags||[]).join(' · ')}</div>
+            </div>
+          </div>
+          <div class="admin-project-btns">
+            <button class="admin-btn edit" onclick="editTicket('${t.id}')">✎ Edit</button>
+            <button class="admin-btn del" onclick="deleteTicket('${t.id}')">🗑</button>
+          </div>
+        </div>
+      `}).join('')}
+    </div>
+
+    <!-- ABOUT STATS -->
+    <div class="admin-section-title" style="margin-top:48px">📊 About Us Stats</div>
+    <div class="admin-form">
+      ${aboutStats.map((s, idx) => `
+        <div class="admin-form-row" style="grid-template-columns:2fr 1fr">
+          <div class="form-group">
+            <label class="form-label">${s.label} (Label)</label>
+            <input type="text" value="${s.label}" onchange="aboutStats[${idx}].label=this.value;saveAboutStats();renderAboutStats();">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Value</label>
+            <input type="text" value="${s.value}" onchange="aboutStats[${idx}].value=this.value;saveAboutStats();renderAboutStats();">
+          </div>
+        </div>
+        <div style="display:flex;gap:8px;margin-bottom:16px">
+          <div class="form-group" style="flex:1">
+            <label class="form-label">Suffix (+, %, etc)</label>
+            <input type="text" value="${s.suffix}" placeholder="+" onchange="aboutStats[${idx}].suffix=this.value;saveAboutStats();renderAboutStats();">
+          </div>
+          <button class="admin-btn del" onclick="aboutStats.splice(${idx},1);saveAboutStats();renderAboutStats();renderAdminBody()" style="align-self:flex-end;margin-bottom:0">🗑 Remove</button>
+        </div>
+      `).join('')}
+      <button class="admin-btn save" onclick="aboutStats.push({label:'New Stat',value:'0',suffix:''});saveAboutStats();renderAboutStats();renderAdminBody()" style="width:100%;margin-bottom:16px">+ Add New Stat</button>
+    </div>
+
+    <div style="margin-top:40px;padding-top:24px;border-top:1px solid var(--border)">
+      <button class="admin-btn del" onclick="confirmReset()">⚠ Clear All Projects</button>
+      <button class="admin-btn cancel" onclick="adminUnlocked=false;closeAdmin()" style="margin-left:10px">🔒 Lock Panel</button>
+    </div>
+  `;
+  // set today as default ticket date
+  const td = document.getElementById('t_date');
+  if(td && !td.value) td.value = new Date().toISOString().split('T')[0];
+}
+
+function checkPassword(){
+  const pw = document.getElementById('adminPwInput').value;
+  if(pw===ADMIN_PASSWORD){ adminUnlocked=true; renderAdminBody(); }
+  else { document.getElementById('pwError').textContent='Incorrect password. Try again.'; }
+}
+
+function saveProject(){
+  const title=document.getElementById('f_title').value.trim();
+  const cat=document.getElementById('f_cat').value;
+  const desc=document.getElementById('f_desc').value.trim();
+  const tech=document.getElementById('f_tech').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const color=document.getElementById('f_color').value;
+  const emoji=document.getElementById('f_emoji').value||'🌟';
+  const link=document.getElementById('f_link').value.trim();
+  const imageUrl=document.getElementById('f_img').value.trim();
+  const eid=document.getElementById('editId').value;
+
+  if(!title||!cat||!desc){ showToast('Please fill in all required fields.','error'); return; }
+
+  if(eid){
+    const idx=projects.findIndex(p=>p.id==eid);
+    if(idx>-1) projects[idx]={...projects[idx],title,category:cat,desc,tech,color,emoji,link,imageUrl};
+    showToast('Project updated!','success');
+    editingId=null;
+  } else {
+    projects.unshift({id:getNextId(),title,category:cat,desc,tech,color,emoji,link,imageUrl});
+    showToast('Project added!','success');
+  }
+  saveProjects(); renderProjects(); renderAdminBody();
+}
+
+function editProject(id){
+  const p=projects.find(pr=>pr.id===id);
+  if(!p) return;
+  editingId=id;
+  document.getElementById('editId').value=id;
+  document.getElementById('f_title').value=p.title;
+  document.getElementById('f_cat').value=p.category;
+  document.getElementById('f_desc').value=p.desc;
+  document.getElementById('f_tech').value=(p.tech||[]).join(', ');
+  document.getElementById('f_color').value=p.color||'#f0a500';
+  document.getElementById('f_emoji').value=p.emoji||'';
+  document.getElementById('f_link').value=p.link||'';
+  document.getElementById('f_img').value=p.imageUrl||'';
+  document.getElementById('cancelBtn').style.display='';
+  document.querySelector('.admin-panel').scrollTop=0;
+}
+
+function cancelEdit(){
+  editingId=null;
+  document.getElementById('editId').value='';
+  document.getElementById('f_title').value='';
+  document.getElementById('f_cat').value='';
+  document.getElementById('f_desc').value='';
+  document.getElementById('f_tech').value='';
+  document.getElementById('f_color').value='#f0a500';
+  document.getElementById('f_emoji').value='';
+  document.getElementById('f_link').value='';
+  document.getElementById('f_img').value='';
+  document.getElementById('cancelBtn').style.display='none';
+}
+
+function confirmDelete(id){
+  deleteTargetId=id;
+  document.getElementById('confirmModal').classList.add('open');
+  document.getElementById('confirmDelBtn').onclick=()=>{ deleteProject(id); closeModal(); };
+}
+function closeModal(){ document.getElementById('confirmModal').classList.remove('open'); deleteTargetId=null; }
+function deleteProject(id){
+  projects=projects.filter(p=>p.id!==id);
+  saveProjects(); renderProjects(); renderAdminBody();
+  showToast('Project deleted.','success');
+}
+function confirmReset(){
+  if(confirm('Clear all projects? This cannot be undone.')){
+    projects=[]; saveProjects(); renderProjects(); renderAdminBody();
+    showToast('All projects cleared.','success');
+  }
+}
+
+// ── TOAST ──
+function showToast(msg,type='success'){
+  const el=document.createElement('div');
+  el.className=`toast-msg ${type}`;
+  el.textContent=msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(()=>el.remove(),3500);
+}
+
+// ── FORM SUBMIT ──
+function submitForm(e){
+  e.preventDefault();
+  showToast('Message sent! I\'ll get back to you within 24 hours.','success');
+  e.target.reset();
+}
+
+// ── BOOT ──
+function saveTicket(){
+  const title  = document.getElementById('t_title').value.trim();
+  const status = document.getElementById('t_status').value;
+  const desc   = document.getElementById('t_desc').value.trim();
+  const tags   = document.getElementById('t_tags').value.split(',').map(t=>t.trim()).filter(Boolean);
+  const date   = document.getElementById('t_date').value;
+  const eid    = document.getElementById('t_editId').value;
+  if(!title||!desc){ showToast('Title and description are required.','error'); return; }
+  const dateStr = date ? new Date(date).toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'}) : '';
+  if(eid){
+    const idx = tickets.findIndex(t=>t.id===eid);
+    if(idx>-1) tickets[idx]={...tickets[idx],title,status,desc,tags,date:dateStr};
+    showToast('Ticket updated!','success');
+  } else {
+    tickets.unshift({id:getNextTicketId(),title,status,desc,tags,date:dateStr});
+    showToast('Ticket added!','success');
+  }
+  saveTickets(); renderTickets(); renderAdminBody();
+}
+function editTicket(id){
+  const t = tickets.find(tk=>tk.id===id);
+  if(!t) return;
+  document.getElementById('t_editId').value = t.id;
+  document.getElementById('t_title').value  = t.title;
+  document.getElementById('t_status').value = t.status;
+  document.getElementById('t_desc').value   = t.desc;
+  document.getElementById('t_tags').value   = (t.tags||[]).join(', ');
+  document.getElementById('tCancelBtn').style.display = '';
+  document.querySelector('.admin-panel').scrollTop = 0;
+}
+function cancelTicketEdit(){
+  document.getElementById('t_editId').value='';
+  document.getElementById('t_title').value='';
+  document.getElementById('t_desc').value='';
+  document.getElementById('t_tags').value='';
+  document.getElementById('t_status').value='Resolved';
+  document.getElementById('tCancelBtn').style.display='none';
+}
+function deleteTicket(id){
+  tickets = tickets.filter(t=>t.id!==id);
+  saveTickets(); renderTickets(); renderAdminBody();
+  showToast('Ticket deleted.','success');
+}
+
+document.addEventListener('DOMContentLoaded',()=>{
+  loadProjects();
+  loadTickets();
+  loadAboutStats();
+  renderProjects();
+  renderTickets();
+  renderAboutStats();
+  renderSkills();
+  renderTestimonials();
+  renderMarquee();
+  initCanvas();
+  initObserver();
+  initCursor();
+  const aboutSection=document.querySelector('#about .about-counters');
+  if(aboutSection) counterObserver.observe(aboutSection);
+  // Auto-slide testimonials
+  setInterval(()=>slideTestimonial(1),7000);
+});
+
+// ── ANIMATED CODE WINDOWS ──
+const CODE_DEFS = {
+  'code-uiux': {
+    accent:'#e879f9',
+    lines:[
+      ['',                                                                              ''],
+      ['<span class="c-cm">/* Button Component Styles */</span>',                      ''],
+      ['<span class="c-prop">.btn</span> <span class="c-op">{</span>',                  ''],
+      ['  <span class="c-atr">display</span><span class="c-op">:</span> <span class="c-str">inline-flex</span><span class="c-op">;</span>',   'indent1'],
+      ['  <span class="c-atr">padding</span><span class="c-op">:</span> <span class="c-num">14px 32px</span><span class="c-op">;</span>',       'indent1'],
+      ['  <span class="c-atr">background</span><span class="c-op">:</span> <span class="c-str">var(--color-primary)</span><span class="c-op">;</span>','indent1'],
+      ['  <span class="c-atr">border-radius</span><span class="c-op">:</span> <span class="c-num">8px</span><span class="c-op">;</span>',   'indent1'],
+      ['  <span class="c-atr">transition</span><span class="c-op">:</span> <span class="c-str">all .3s ease</span><span class="c-op">;</span>',    'indent1'],
+      ['<span class="c-op">}</span>',                                                     ''],
+      ['',                                                                              ''],
+      ['<span class="c-prop">.btn:hover</span> <span class="c-op">{</span>',            ''],
+      ['  <span class="c-atr">transform</span><span class="c-op">:</span> <span class="c-str">translateY(-2px)</span><span class="c-op">;</span>', 'indent1'],
+      ['  <span class="c-atr">box-shadow</span><span class="c-op">:</span> <span class="c-str">0 8px 24px rgba(0,0,0,.3)</span><span class="c-op">;</span>','indent1'],
+      ['<span class="c-op">}</span>',                                                     ''],
+      ['',                                                                              ''],
+      ['<span class="c-prop">.btn--primary</span> <span class="c-op">{</span>',         ''],
+      ['  <span class="c-atr">background</span><span class="c-op">:</span> <span class="c-str">linear-gradient(135deg,</span>','indent1'],
+      ['    <span class="c-str">#f0a500, #ffc84a)</span><span class="c-op">;</span>',       'indent2'],
+      ['  <span class="c-atr">color</span><span class="c-op">:</span> <span class="c-str">#080810</span><span class="c-op">;</span>','indent1'],
+      ['<span class="c-op">}</span>',                                                     ''],
+      ['<span class="c-cur">█</span>',                                                   ''],
+    ]
+  },
+  'code-web': {
+    accent:'#61dafb',
+    lines:[
+      ['<span class="c-kw">import</span> <span class="c-op">{</span> <span class="c-fn">useState</span><span class="c-op">,</span> <span class="c-fn">useEffect</span> <span class="c-op">}</span> <span class="c-kw">from</span> <span class="c-str">\'react\'</span>',''],
+      ['<span class="c-kw">import</span> <span class="c-fn">styles</span> <span class="c-kw">from</span> <span class="c-str">\'./Hero.module.css\'</span>',''],
+      ['',''],
+      ['<span class="c-kw">export default function</span> <span class="c-fn">HeroSection</span><span class="c-op">() {</span>',''],
+      ['  <span class="c-kw">const</span> <span class="c-op">[</span><span class="c-var">loaded</span><span class="c-op">,</span> <span class="c-fn">setLoaded</span><span class="c-op">]</span> <span class="c-op">=</span> <span class="c-fn">useState</span><span class="c-op">(</span><span class="c-kw">false</span><span class="c-op">)</span>','indent1'],
+      ['',''],
+      ['  <span class="c-fn">useEffect</span><span class="c-op">(() => {</span>','indent1'],
+      ['    <span class="c-kw">const</span> <span class="c-var">t</span> <span class="c-op">=</span> <span class="c-fn">setTimeout</span><span class="c-op">(()</span> <span class="c-op">=></span> <span class="c-fn">setLoaded</span><span class="c-op">(</span><span class="c-kw">true</span><span class="c-op">),</span> <span class="c-num">100</span><span class="c-op">)</span>','indent2'],
+      ['    <span class="c-kw">return</span> <span class="c-op">()</span> <span class="c-op">=></span> <span class="c-fn">clearTimeout</span><span class="c-op">(</span><span class="c-var">t</span><span class="c-op">)</span>','indent2'],
+      ['  <span class="c-op">}, [])</span>','indent1'],
+      ['',''],
+      ['  <span class="c-kw">return</span> <span class="c-op">(</span>','indent1'],
+      ['    <span class="c-tag">&lt;section</span> <span class="c-atr">className</span><span class="c-op">={</span><span class="c-prop">styles.hero</span><span class="c-op">}&gt;</span>','indent2'],
+      ['      <span class="c-tag">&lt;h1</span> <span class="c-atr">data-loaded</span><span class="c-op">={</span><span class="c-var">loaded</span><span class="c-op">}&gt;</span>','indent3'],
+      ['        Premium Web Studio','indent3'],
+      ['      <span class="c-tag">&lt;/h1&gt;</span>','indent3'],
+      ['      <span class="c-tag">&lt;AnimatedCTA</span> <span class="c-atr">delay</span><span class="c-op">={</span><span class="c-num">0.3</span><span class="c-op">} /&gt;</span>','indent3'],
+      ['    <span class="c-tag">&lt;/section&gt;</span>','indent2'],
+      ['  <span class="c-op">)</span>','indent1'],
+      ['<span class="c-op">}</span>',''],
+      ['<span class="c-cur">█</span>',''],
+    ]
+  },
+  'code-app': {
+    accent:'#a3e635',
+    lines:[
+      ['<span class="c-kw">import</span> <span class="c-fn">React</span><span class="c-op">,</span> <span class="c-op">{</span> <span class="c-fn">useRef</span> <span class="c-op">}</span> <span class="c-kw">from</span> <span class="c-str">\'react-native\'</span>',''],
+      ['<span class="c-kw">import</span> <span class="c-op">{</span> <span class="c-fn">Animated</span><span class="c-op">,</span> <span class="c-fn">TouchableOpacity</span> <span class="c-op">}</span>',''],
+      ['  <span class="c-kw">from</span> <span class="c-str">\'react-native\'</span>','indent1'],
+      ['',''],
+      ['<span class="c-kw">export default function</span> <span class="c-fn">HomeScreen</span><span class="c-op">() {</span>',''],
+      ['  <span class="c-kw">const</span> <span class="c-var">anim</span> <span class="c-op">=</span> <span class="c-fn">useRef</span><span class="c-op">(</span><span class="c-kw">new</span> <span class="c-fn">Animated.Value</span><span class="c-op">(</span><span class="c-num">0</span><span class="c-op">)).current</span>','indent1'],
+      ['',''],
+      ['  <span class="c-kw">const</span> <span class="c-fn">pulse</span> <span class="c-op">=</span> <span class="c-op">() =></span> <span class="c-op">{</span>','indent1'],
+      ['    <span class="c-fn">Animated.spring</span><span class="c-op">(</span><span class="c-var">anim</span><span class="c-op">, {</span>','indent2'],
+      ['      <span class="c-prop">toValue</span><span class="c-op">:</span> <span class="c-num">1</span><span class="c-op">,</span> <span class="c-prop">friction</span><span class="c-op">:</span> <span class="c-num">3</span>','indent3'],
+      ['    <span class="c-op">}).start()</span>','indent2'],
+      ['  <span class="c-op">}</span>','indent1'],
+      ['',''],
+      ['  <span class="c-kw">return</span> <span class="c-op">(</span>','indent1'],
+      ['    <span class="c-tag">&lt;TouchableOpacity</span> <span class="c-atr">onPress</span><span class="c-op">={</span><span class="c-fn">pulse</span><span class="c-op">}&gt;</span>','indent2'],
+      ['      <span class="c-tag">&lt;Animated.View</span>','indent3'],
+      ['        <span class="c-atr">style</span><span class="c-op">={{</span><span class="c-prop">transform</span><span class="c-op">: [{</span><span class="c-prop">scale</span><span class="c-op">:</span><span class="c-var">anim</span><span class="c-op">}]}}</span>','indent3'],
+      ['      <span class="c-op">/&gt;</span>','indent3'],
+      ['    <span class="c-tag">&lt;/TouchableOpacity&gt;</span>','indent2'],
+      ['  <span class="c-op">)</span>','indent1'],
+      ['<span class="c-op">}</span>',''],
+      ['<span class="c-cur">█</span>',''],
+    ]
+  },
+  'code-sap2': {
+    accent:'#0078d7',
+    lines:[
+      ['<span class="c-kw">FUNCTION</span> <span class="fn">z_smartform_driver</span><span class="c-op">.</span>',''],
+      ['<span class="c-kw">*"----------------------------------------------------</span>',''],
+      ['<span class="c-kw">*"</span> <span class="c-atr">IMPORTING</span>  <span class="c-var">iv_vbeln</span>  <span class="kw">TYPE</span> <span class="fn">vbeln</span>','indent1'],
+      ['<span class="c-kw">*"----------------------------------------------------</span>',''],
+      ['  <span class="c-kw">DATA</span><span class="c-op">:</span> <span class="c-var">lv_fm_name</span>  <span class="c-kw">TYPE</span> <span class="fn">rs38l_fnam</span><span class="c-op">,</span>','indent1'],
+      ['         <span class="c-var">ls_ctrl</span>    <span class="c-kw">TYPE</span> <span class="fn">ssfctrlop</span><span class="c-op">.</span>','indent1'],
+      ['',''],
+      ['  <span class="c-cm">"-- Get Smartform function module name</span>','indent1'],
+      ['  <span class="c-kw">CALL FUNCTION</span> <span class="c-str">\'SSF_FUNCTION_MODULE_NAME\'</span>','indent1'],
+      ['    <span class="c-kw">EXPORTING</span>  <span class="c-var">formname</span>  <span class="c-op">=</span> <span class="c-str">\'ZMM_INVOICE\'</span>','indent2'],
+      ['    <span class="c-kw">IMPORTING</span>  <span class="c-var">fm_name</span>   <span class="c-op">=</span> <span class="c-var">lv_fm_name</span><span class="c-op">.</span>','indent2'],
+      ['',''],
+      ['  <span class="c-var">ls_ctrl</span><span class="c-op">-</span><span class="c-prop">no_dialog</span> <span class="c-op">=</span> <span class="c-str">\'X\'</span><span class="c-op">.</span>','indent1'],
+      ['  <span class="c-var">ls_ctrl</span><span class="c-op">-</span><span class="c-prop">preview</span>   <span class="c-op">=</span> <span class="c-str">\'X\'</span><span class="c-op">.</span>','indent1'],
+      ['',''],
+      ['  <span class="c-kw">CALL FUNCTION</span> <span class="c-var">lv_fm_name</span>','indent1'],
+      ['    <span class="c-kw">EXPORTING</span>  <span class="c-var">control_parameters</span> <span class="c-op">=</span> <span class="c-var">ls_ctrl</span>','indent2'],
+      ['               <span class="c-var">iv_vbeln</span>           <span class="c-op">=</span> <span class="c-var">iv_vbeln</span><span class="c-op">.</span>','indent2'],
+      ['<span class="c-kw">ENDFUNCTION</span><span class="c-op">.</span>',''],
+      ['<span class="c-cur">█</span>',''],
+    ]
+  },
+  'code-ecom': {
+    accent:'#f0a500',
+    lines:[
+      ['<span class="c-cm">// Checkout API — Node.js + Stripe</span>',''],
+      ['<span class="c-kw">const</span> <span class="c-fn">stripe</span> <span class="c-op">=</span> <span class="c-fn">require</span><span class="c-op">(</span><span class="c-str">\'stripe\'</span><span class="c-op">)(</span><span class="c-var">process.env</span><span class="c-op">.</span><span class="c-prop">STRIPE_KEY</span><span class="c-op">)</span>',''],
+      ['',''],
+      ['<span class="c-var">router</span><span class="c-op">.</span><span class="c-fn">post</span><span class="c-op">(</span><span class="c-str">\'/checkout\'</span><span class="c-op">,</span> <span class="c-kw">async</span> <span class="c-op">(</span><span class="c-var">req</span><span class="c-op">,</span> <span class="c-var">res</span><span class="c-op">) => {</span>',''],
+      ['  <span class="c-kw">const</span> <span class="c-op">{</span> <span class="c-var">items</span><span class="c-op">,</span> <span class="c-var">currency</span> <span class="c-op">}</span> <span class="c-op">=</span> <span class="c-var">req</span><span class="c-op">.</span><span class="c-prop">body</span>','indent1'],
+      ['',''],
+      ['  <span class="c-kw">const</span> <span class="c-var">session</span> <span class="c-op">=</span> <span class="c-kw">await</span> <span class="c-fn">stripe</span>','indent1'],
+      ['    <span class="c-op">.</span><span class="c-prop">checkout</span><span class="c-op">.</span><span class="c-prop">sessions</span><span class="c-op">.</span><span class="c-fn">create</span><span class="c-op">({</span>','indent2'],
+      ['      <span class="c-prop">payment_method_types</span><span class="c-op">: [</span><span class="c-str">\'card\'</span><span class="c-op">],</span>','indent3'],
+      ['      <span class="c-prop">line_items</span><span class="c-op">:</span> <span class="c-var">items</span><span class="c-op">,</span>','indent3'],
+      ['      <span class="c-prop">mode</span><span class="c-op">:</span> <span class="c-str">\'payment\'</span><span class="c-op">,</span>','indent3'],
+      ['      <span class="c-prop">currency</span><span class="c-op">:</span> <span class="c-var">currency</span> <span class="c-op">||</span> <span class="c-str">\'inr\'</span><span class="c-op">,</span>','indent3'],
+      ['      <span class="c-prop">success_url</span><span class="c-op">:</span> <span class="c-str">`${BASE_URL}/success`</span><span class="c-op">,</span>','indent3'],
+      ['    <span class="c-op">})</span>','indent2'],
+      ['',''],
+      ['  <span class="c-var">res</span><span class="c-op">.</span><span class="c-fn">json</span><span class="c-op">({</span> <span class="c-prop">url</span><span class="c-op">:</span> <span class="c-var">session</span><span class="c-op">.</span><span class="c-prop">url</span> <span class="c-op">})</span>','indent1'],
+      ['<span class="c-op">})</span>',''],
+      ['<span class="c-cur">█</span>',''],
+    ]
+  }
+};
+
+function animateCodeWindow(id, def, startDelay = 0) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.innerHTML = '';
+  const lines = def.lines;
+  lines.forEach((line, i) => {
+    const div = document.createElement('span');
+    div.className = 'cl' + (line[1] ? ' ' + line[1] : '');
+    div.innerHTML = line[0];
+    el.appendChild(div);
+    setTimeout(() => div.classList.add('shown'), startDelay + i * 80);
+  });
+}
+
+function startCodeAnimations() {
+  Object.entries(CODE_DEFS).forEach(([id, def], idx) => {
+    animateCodeWindow(id, def, idx * 200);
+    // loop
+    const total = def.lines.length * 80 + 3000;
+    setInterval(() => animateCodeWindow(id, def, 0), total + idx * 200);
+  });
+}
+
+// observe each srv-panel to trigger code animation when in view
+const srvObserver = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.querySelector('.srv-code-body')?.id;
+      if (id && CODE_DEFS[id]) {
+        animateCodeWindow(id, CODE_DEFS[id], 200);
+        srvObserver.unobserve(entry.target);
+      }
+    }
+  });
+}, { threshold: 0.3 });
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.srv-panel').forEach(p => srvObserver.observe(p));
+});
+
+
+// Close modal on backdrop click
+document.getElementById('confirmModal').addEventListener('click',e=>{
+  if(e.target===document.getElementById('confirmModal')) closeModal();
+});
+</script>
+</body>
+</html>
