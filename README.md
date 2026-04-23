@@ -88,7 +88,6 @@ A modern, dynamic portfolio website showcasing enterprise SAP ABAP development s
 ### Change Admin Password
 Edit line in script section:
 ```javascript
-const ADMIN_PASSWORD = 'admin2025';
 ```
 
 ### Update Colors
