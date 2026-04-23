@@ -1108,6 +1108,45 @@ footer .logo-desktop span {
   .projects-grid{grid-template-columns:1fr;}
   .services-grid{grid-template-columns:1fr;}
 }
+
+
+/* Read More */
+  /* The container for the text */
+.js-truncate {
+  display: -webkit-box;
+  -webkit-line-clamp: 3; /* Limit to 3 lines */
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 0.4s ease;
+  margin-bottom: 10px;
+}
+
+/* The state when the user clicks 'Read More' */
+.js-truncate.is-expanded {
+  -webkit-line-clamp: unset !important;
+  display: block !important;
+}
+
+/* The 'Read More' link style */
+.truncate-trigger {
+  display: inline-block;
+  color: var(--gold); /* Use your brand gold */
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 20px;
+  border-bottom: 1px solid transparent;
+}
+
+.truncate-trigger:hover {
+  border-bottom-color: var(--gold);
+}
+
+
+  
 </style>
 </head>
 <body>
@@ -1464,7 +1503,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">ABAP</div>
       </div>
       <div class="sap-card-title">ALV Reports</div>
-      <div class="sap-card-desc">Custom ALV Grid and List reports using CL_SALV_TABLE, REUSE_ALV_GRID_DISPLAY, and OOP ALV. Interactive reports with sorting, filtering, totals, and export to Excel.</div>
+      <div class="sap-card-desc" class="js-truncate">Custom ALV Grid and List reports using CL_SALV_TABLE, REUSE_ALV_GRID_DISPLAY, and OOP ALV. Interactive reports with sorting, filtering, totals, and export to Excel.</div>
       <ul class="sap-feature-list">
         <li>CL_SALV_TABLE & REUSE_ALV</li>
         <li>Interactive columns & hotspots</li>
@@ -1481,7 +1520,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">Print</div>
       </div>
       <div class="sap-card-title">Smartforms</div>
-      <div class="sap-card-desc">Enterprise-grade SAP Smartforms for invoices, delivery notes, purchase orders, and any business documents — with multi-language and multi-currency support.</div>
+      <div class="sap-card-desc" class="js-truncate">Enterprise-grade SAP Smartforms for invoices, delivery notes, purchase orders, and any business documents — with multi-language and multi-currency support.</div>
       <ul class="sap-feature-list">
         <li>Invoice & PO Smartforms</li>
         <li>Dynamic table & text elements</li>
@@ -1498,7 +1537,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">Adobe</div>
       </div>
       <div class="sap-card-title">Adobe Forms</div>
-      <div class="sap-card-desc">Interactive and print-ready Adobe PDF forms using SAP Adobe Document Services (ADS). Pixel-perfect layouts replacing legacy Smartforms with modern fillable PDFs.</div>
+      <div class="sap-card-desc" class="js-truncate">Interactive and print-ready Adobe PDF forms using SAP Adobe Document Services (ADS). Pixel-perfect layouts replacing legacy Smartforms with modern fillable PDFs.</div>
       <ul class="sap-feature-list">
         <li>Interactive PDF forms</li>
         <li>ADS configuration & setup</li>
@@ -1515,7 +1554,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">Screen</div>
       </div>
       <div class="sap-card-title">Module Pool Programming</div>
-      <div class="sap-card-desc">Custom screen-based SAP applications using Module Pool (Dialog Programming). Complex user interfaces with multi-screen navigation, tabstrips, and real-time validations.</div>
+      <div class="sap-card-desc" class="js-truncate">Custom screen-based SAP applications using Module Pool (Dialog Programming). Complex user interfaces with multi-screen navigation, tabstrips, and real-time validations.</div>
       <ul class="sap-feature-list">
         <li>Custom dynpro screens</li>
         <li>Tabstrips & subscreen areas</li>
@@ -1532,7 +1571,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">Integration</div>
       </div>
       <div class="sap-card-title">BAPI & RFC Integration</div>
-      <div class="sap-card-desc">Seamless SAP integration using BAPIs, RFC function modules, and IDocs for connecting SAP with third-party systems, portals, and APIs.</div>
+      <div class="sap-card-desc" class="js-truncate">Seamless SAP integration using BAPIs, RFC function modules, and IDocs for connecting SAP with third-party systems, portals, and APIs.</div>
       <ul class="sap-feature-list">
         <li>BAPI & RFC development</li>
         <li>IDoc configuration & monitoring</li>
@@ -1549,7 +1588,7 @@ footer .logo-desktop span {
         <div class="sap-card-badge">Support</div>
       </div>
       <div class="sap-card-title">General SAP Support & Consulting</div>
-      <div class="sap-card-desc">Ongoing SAP support, bug fixes, performance tuning, and ABAP consulting for your live production systems. Fast turnaround, transparent communication.</div>
+      <div class="sap-card-desc" class="js-truncate">Ongoing SAP support, bug fixes, performance tuning, and ABAP consulting for your live production systems. Fast turnaround, transparent communication.</div>
       <div class="sap-support-tags">
         <span class="sap-tag">User Exits & BADIs</span>
         <span class="sap-tag">Enhancement Spots</span>
@@ -1601,7 +1640,7 @@ footer .logo-desktop span {
     <div class="skills-text reveal">
       <div class="section-label">Expertise</div>
       <h2 class="section-title">Our <em>Skill</em> Stack</h2>
-      <p>A cross-functional team combining deep SAP ABAP enterprise expertise with modern web and mobile development. We deliver across the full technology spectrum — from legacy ERP to cutting-edge AI-powered interfaces.</p>
+      <p class="js-truncate">A cross-functional team combining deep SAP ABAP enterprise expertise with modern web and mobile development. We deliver across the full technology spectrum — from legacy ERP to cutting-edge AI-powered interfaces.</p>
       <a href="#contact" class="btn-primary">Start a Project</a>
     </div>
     <div class="skills-bars reveal" id="skillsBars">
@@ -1620,8 +1659,8 @@ footer .logo-desktop span {
     <div class="about-text reveal">
       <div class="section-label">About Us</div>
       <h2 class="section-title">Enterprise <em>Developers</em> & Innovators</h2>
-      <p>We are a focused team specializing in SAP ABAP solutions and modern web development. We deliver enterprise-grade applications that combine technical excellence with real business impact. Every project is an opportunity to solve complex problems and exceed expectations.</p>
-      <p>We believe in transparency, quality code, and partnerships built on trust. Our clients return because we understand their business first, then engineer perfect solutions. No shortcuts. No templates. Just solid, production-ready work.</p>
+      <p class="js-truncate">We are a focused team specializing in SAP ABAP solutions and modern web development. We deliver enterprise-grade applications that combine technical excellence with real business impact. Every project is an opportunity to solve complex problems and exceed expectations.</p>
+      <p class="js-truncate">We believe in transparency, quality code, and partnerships built on trust. Our clients return because we understand their business first, then engineer perfect solutions. No shortcuts. No templates. Just solid, production-ready work.</p>
       <div class="about-counters" id="aboutStats">
         <!-- Rendered dynamically from admin panel -->
       </div>
@@ -1678,7 +1717,7 @@ footer .logo-desktop span {
     <form class="contact-form reveal" onsubmit="submitForm(event)">
       <div class="form-group">
         <label class="form-label">Your Name</label>
-        <input type="text" placeholder="John Doe" required>
+        <input type="text" placeholder="Panchanana Dash" required>
       </div>
       <div class="admin-form-row">
         <div class="form-group">
@@ -1766,18 +1805,51 @@ footer .logo-desktop span {
 
 <script>
 // ── DATA ──
-const DEFAULT_PROJECTS = [];
+// const DEFAULT_PROJECTS = [];
 
-const SKILLS = [
-  { name:'SAP ABAP Development', pct:96 },
-  { name:'ALV Reports & Smartforms', pct:95 },
-  { name:'Adobe Forms & Module Pool', pct:92 },
-  { name:'React & Next.js', pct:90 },
-  { name:'UI / UX Design (Figma)', pct:88 },
-  { name:'Node.js & REST APIs', pct:85 },
-  { name:'React Native (Mobile)', pct:82 },
-  { name:'AI Integration & Automation', pct:80 },
-];
+// const SKILLS = [
+//   { name:'SAP ABAP Development', pct:96 },
+//   { name:'ALV Reports & Smartforms', pct:95 },
+//   { name:'Adobe Forms & Module Pool', pct:92 },
+//   { name:'React & Next.js', pct:90 },
+//   { name:'UI / UX Design (Figma)', pct:88 },
+//   { name:'Node.js & REST APIs', pct:85 },
+//   { name:'React Native (Mobile)', pct:82 },
+//   { name:'AI Integration & Automation', pct:80 },
+// ];
+// Read More
+
+function initReadMore() {
+  const containers = document.querySelectorAll('.js-truncate');
+
+  containers.forEach(container => {
+    // Check if the content is actually taller than 3 lines
+    if (container.scrollHeight > container.offsetHeight) {
+      const btn = document.createElement('span');
+      btn.className = 'truncate-trigger';
+      btn.textContent = 'Read More';
+      
+      // Add the button immediately after the text
+      container.parentNode.insertBefore(btn, container.nextSibling);
+
+      btn.addEventListener('click', () => {
+        const isExpanded = container.classList.toggle('is-expanded');
+        btn.textContent = isExpanded ? 'Read Less' : 'Read More';
+        
+        // If closing, scroll smoothly back to the top of the text
+        if (!isExpanded) {
+          container.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+  });
+}
+
+// Run this function after the page loads
+document.addEventListener('DOMContentLoaded', initReadMore);
+
+
+  
 
 const TESTIMONIALS = [
   {
