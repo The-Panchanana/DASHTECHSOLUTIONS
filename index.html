@@ -1289,6 +1289,52 @@ footer .logo-desktop span {
   letter-spacing: 0.1em;
 }
 
+  
+/* --- About Us Truncation Logic --- */
+@media (max-width: 900px) {
+  .js-aboutus {
+    display: -webkit-box;
+    -webkit-line-clamp: 3; /* The 3-line limit */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    margin-bottom: 8px !important;
+  }
+
+  .js-aboutus.is-expanded {
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+  }
+
+  /* Style for the button that appears only on mobile */
+  .about-toggle-btn {
+    display: inline-block;
+    color: var(--gold);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    margin-bottom: 24px;
+    border-bottom: 1px solid transparent;
+  }
+  
+  .about-toggle-btn:hover {
+    border-bottom-color: var(--gold);
+  }
+}
+
+/* Hide the toggle button on PC/Desktop screens */
+@media (min-width: 901px) {
+  .about-toggle-btn {
+    display: none !important;
+  }
+  .js-aboutus {
+    -webkit-line-clamp: unset !important;
+    display: block !important;
+  }
+}
 
   
 </style>
@@ -1803,8 +1849,8 @@ footer .logo-desktop span {
     <div class="about-text reveal">
       <div class="section-label">About Us</div>
       <h2 class="section-title">Enterprise <em>Developers</em> & Innovators</h2>
-      <p class="js-truncate">We are a focused team specializing in SAP ABAP solutions and modern web development. We deliver enterprise-grade applications that combine technical excellence with real business impact. Every project is an opportunity to solve complex problems and exceed expectations.</p>
-      <p class="js-truncate">We believe in transparency, quality code, and partnerships built on trust. Our clients return because we understand their business first, then engineer perfect solutions. No shortcuts. No templates. Just solid, production-ready work.</p>
+      <p class="js-aboutus">We are a focused team specializing in SAP ABAP solutions and modern web development. We deliver enterprise-grade applications that combine technical excellence with real business impact. Every project is an opportunity to solve complex problems and exceed expectations.</p>
+      <p class="js-aboutus">We believe in transparency, quality code, and partnerships built on trust. Our clients return because we understand their business first, then engineer perfect solutions. No shortcuts. No templates. Just solid, production-ready work.</p>
       <div class="about-counters" id="aboutStats">
         <!-- Rendered dynamically from admin panel -->
       </div>
@@ -2924,6 +2970,39 @@ document.addEventListener('DOMContentLoaded', () => {
 document.getElementById('confirmModal').addEventListener('click',e=>{
   if(e.target===document.getElementById('confirmModal')) closeModal();
 });
+
+
+
+  function initAboutAccordion() {
+  // Only execute on mobile/tablet widths
+  if (window.innerWidth > 900) return;
+
+  const descriptions = document.querySelectorAll('.js-aboutus');
+
+  descriptions.forEach(el => {
+    // Check if content overflows 3 lines
+    if (el.scrollHeight > el.clientHeight) {
+      const btn = document.createElement('span');
+      btn.className = 'about-toggle-btn';
+      btn.textContent = 'Read More';
+      
+      el.parentNode.insertBefore(btn, el.nextSibling);
+
+      btn.addEventListener('click', () => {
+        const expanded = el.classList.toggle('is-expanded');
+        btn.textContent = expanded ? 'Read Less' : 'Read More';
+        
+        // Smooth scroll if closing
+        if (!expanded) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+      });
+    }
+  });
+}
+
+// Initialize on load
+document.addEventListener('DOMContentLoaded', initAboutAccordion);
 </script>
 </body>
 </html>
