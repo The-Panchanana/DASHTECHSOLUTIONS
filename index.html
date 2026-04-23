@@ -1145,6 +1145,35 @@ footer .logo-desktop span {
   border-bottom-color: var(--gold);
 }
 
+  /* Truncate testimonial text to 3 lines */
+.testimonial-text {
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+/* State when clicked */
+.testimonial-text.expanded {
+  -webkit-line-clamp: unset;
+  display: block;
+}
+
+/* Read More link style */
+.testi-read-more {
+  display: inline-block;
+  margin-top: 10px;
+  margin-bottom: 20px;
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+}
+
 
   
 </style>
@@ -2052,12 +2081,37 @@ function renderSkills(){
 }
 
 // ── TESTIMONIALS ──
-function renderTestimonials(){
+// function renderTestimonials(){
+//   const track = document.getElementById('testimonialTrack');
+//   track.innerHTML = TESTIMONIALS.map(t=>`
+//     <div class="testimonial-card">
+//       <div class="quote-mark">"</div>
+//       <div class="testimonial-text">${t.text}</div>
+//       <div class="testimonial-author">
+//         <div class="author-avatar">${t.emoji}</div>
+//         <div class="author-info">
+//           <div class="name">${t.name}</div>
+//           <div class="role">${t.role}</div>
+//         </div>
+//       </div>
+//     </div>
+//   `).join('');
+// }
+// function slideTestimonial(dir){
+//   currentSlide = (currentSlide+dir+TESTIMONIALS.length)%TESTIMONIALS.length;
+//   document.getElementById('testimonialTrack').style.transform=`translateX(-${currentSlide*100}%)`;
+// }
+  function renderTestimonials() {
   const track = document.getElementById('testimonialTrack');
-  track.innerHTML = TESTIMONIALS.map(t=>`
+  if (!track) return;
+
+  track.innerHTML = TESTIMONIALS.map((t, index) => `
     <div class="testimonial-card">
       <div class="quote-mark">"</div>
-      <div class="testimonial-text">${t.text}</div>
+      <div class="testimonial-text" id="testi-text-${index}">${t.text}</div>
+      
+      <span class="testi-read-more" onclick="toggleTesti(${index}, this)">Read More</span>
+
       <div class="testimonial-author">
         <div class="author-avatar">${t.emoji}</div>
         <div class="author-info">
@@ -2068,9 +2122,17 @@ function renderTestimonials(){
     </div>
   `).join('');
 }
-function slideTestimonial(dir){
-  currentSlide = (currentSlide+dir+TESTIMONIALS.length)%TESTIMONIALS.length;
-  document.getElementById('testimonialTrack').style.transform=`translateX(-${currentSlide*100}%)`;
+
+// Function to handle the click
+function toggleTesti(index, btn) {
+  const textEl = document.getElementById(`testi-text-${index}`);
+  if (textEl.classList.contains('expanded')) {
+    textEl.classList.remove('expanded');
+    btn.textContent = 'Read More';
+  } else {
+    textEl.classList.add('expanded');
+    btn.textContent = 'Read Less';
+  }
 }
 
 // ── MARQUEE ──
